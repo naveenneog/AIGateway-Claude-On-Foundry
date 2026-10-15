@@ -1,7 +1,7 @@
 # Status
 
-**Active packet:** P-5 - Population measurement and public publication
-**State:** GATE
+**Active packet:** P-6 - Eight-hour rolling live validation
+**State:** VALIDATING
 **Branch:** main
 
 ## Acceptance and evidence
@@ -45,6 +45,13 @@ separately scoped in `docs/VALIDATION.md`.
   installed-client integration; packet gate passed with an oversized-WIP warning.
 - P-4 `1321cdf`: verified native preview deployment, quota and live/client probes;
   warning-safe startup regression. All correctness checks pass.
+- P-5 `f371edc`: current-code 50k population measurement and public publication.
+- CI diagnostics `6277b59`: preserve PostgreSQL failure context and independent
+  OS results. [Observed Ubuntu/Windows CI pass](https://github.com/naveenneog/AIGateway-Claude-On-Foundry/actions/runs/38789146966).
+
+Public repository: https://github.com/naveenneog/AIGateway-Claude-On-Foundry
+The local committed-tree gate passed 26 checks with no warnings before the
+subsequent intermittent-CI investigation was recorded.
 
 Current population run: 50,000 simulated callers, 100 BUs x 10 tiers, 128
 in-flight injected requests, 390.50 requests/sec, p95 400.92 ms. Mocked identity,
@@ -75,10 +82,12 @@ run, not an uninterrupted unchanged-build certification.
 
 ## Remaining delivery work
 
-Finish public repository publication and observe GitHub CI. Update this file
-with the actual CI result, then use P-6 as the only active packet.
 P-6 acceptance: eight elapsed hours, complete evidence and honest failure count;
 rerun full checks, publish sanitized final result, stop schedule/helper service.
+The first Ubuntu PostgreSQL CI attempt failed; the diagnostic follow-up passed
+on both platforms. Its cause is not established (U-9). Repeat CI during this
+window; if it recurs, use the captured failure phase/logs and fix the demonstrated
+cause rather than discarding a failed run or claiming diagnostics fixed it.
 
 ## Explicit limits / next release work
 

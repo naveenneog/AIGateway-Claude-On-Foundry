@@ -51,6 +51,13 @@ Real PostgreSQL is launched as an isolated local process for
 `npm run test:postgres`; two independent pools verify contention and all 1,000
 BU/tier pairs. This is not a managed Azure PostgreSQL throughput test.
 
+[GitHub CI run 38789146966](https://github.com/naveenneog/AIGateway-Claude-On-Foundry/actions/runs/38789146966)
+passed the Ironclad gate, real PostgreSQL test and PowerShell regression on both
+Ubuntu and Windows under Node 24. The first Ubuntu attempt failed with a database
+connection termination; follow-up diagnostics were added, but a later pass does
+not establish its cause or constitute a fix. This remains U-9 for recurrence
+investigation during the rolling window.
+
 ## Population benchmark
 
 The current-code run at 2026-10-15 18:39 UTC processed 50,000 distinct simulated
