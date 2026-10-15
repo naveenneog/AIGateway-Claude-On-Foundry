@@ -1,0 +1,63 @@
+{
+  "monthlyBudgetUsd": 1000,
+  "models": {
+    "gateway-sonnet": {
+      "deployment": "claude-pilot",
+      "contextTokens": 1000000,
+      "maxOutputTokens": 16384,
+      "inputUsdPerMillion": 6,
+      "outputUsdPerMillion": 30,
+      "cacheReadUsdPerMillion": 0.6,
+      "cacheWriteUsdPerMillion": 12
+    }
+  },
+  "clients": {
+    "cli": { "applicationIds": ["REPLACE-CLI-ENTRA-APP-ID"] },
+    "desktop": { "applicationIds": ["REPLACE-DESKTOP-ENTRA-APP-ID"] }
+  },
+  "businessUnits": {
+    "engineering": {
+      "groups": ["REPLACE-ENGINEERING-SECURITY-GROUP-ID"],
+      "models": ["gateway-sonnet"],
+      "clients": ["cli", "desktop"],
+      "monthlyBudgetUsd": 700,
+      "tiers": ["builder", "analyst", "sandbox"],
+      "tierOverrides": {
+        "builder": { "monthlyBudgetUsd": 250, "userMonthlyBudgetUsd": 40, "maxOutputTokens": 8192 }
+      }
+    },
+    "finance": {
+      "groups": ["REPLACE-FINANCE-SECURITY-GROUP-ID"],
+      "models": ["gateway-sonnet"],
+      "clients": ["cli"],
+      "monthlyBudgetUsd": 300,
+      "tiers": ["analyst", "sandbox"],
+      "tierOverrides": {
+        "analyst": { "monthlyBudgetUsd": 200, "userMonthlyBudgetUsd": 50, "clients": ["cli"] }
+      }
+    }
+  },
+  "tiers": {
+    "builder": {
+      "groups": ["REPLACE-BUILDER-SECURITY-GROUP-ID"],
+      "models": ["gateway-sonnet"],
+      "clients": ["cli"],
+      "monthlyBudgetUsd": 300,
+      "userMonthlyBudgetUsd": 30
+    },
+    "analyst": {
+      "groups": ["REPLACE-ANALYST-SECURITY-GROUP-ID"],
+      "models": ["gateway-sonnet"],
+      "clients": ["cli", "desktop"],
+      "monthlyBudgetUsd": 600,
+      "userMonthlyBudgetUsd": 100
+    },
+    "sandbox": {
+      "groups": ["REPLACE-SANDBOX-SECURITY-GROUP-ID"],
+      "models": ["gateway-sonnet"],
+      "clients": ["cli"],
+      "monthlyBudgetUsd": 50,
+      "userMonthlyBudgetUsd": 15
+    }
+  }
+}

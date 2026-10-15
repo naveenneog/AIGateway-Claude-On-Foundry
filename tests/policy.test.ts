@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { parsePolicy, resolveEntitlement } from '../src/policy.js';
+import { parsePolicy, resolveEntitlement, entitlementLimits } from '../src/policy.js';
 import { policyFixture } from './support.js';
 
 test('arbitrary BU and tier names resolve from verified groups', () => {
@@ -43,4 +43,18 @@ test('many BUs and tiers do not create per-person configuration', () => {
   const policy = parsePolicy(raw);
   assert.equal(resolveEntitlement(policy, ['bu-group-199', 'tier-group-199'], 'cli-app', 'sonnet').tier, 'tier-199');
   assert.equal(Object.keys(policy.businessUnits).length, 201);
+});
+
+test('BU-tier combinations override budgets and output without widening parent permissions', () => {
+  const raw = policyFixture();
+  const policy = parsePolicy({ ...raw, businessUnits: { finance: {
+    ...raw.businessUnits.finance, tiers: ['research'],
+    tierOverrides: { research: { monthlyBudgetUsd: 7, userMonthlyBudgetUsd: 2, maxOutputTokens: 128, clients: ['cli'] } }
+  } } });
+  const entitlement = resolveEntitlement(policy, ['group-finance', 'group-research'], 'cli-app', 'sonnet');
+  assert.deepEqual(entitlementLimits(policy, entitlement), { monthlyBudgetUsd: 7, userMonthlyBudgetUsd: 2, maxOutputTokens: 128 });
+  assert.throws(() => parsePolicy({ ...raw, businessUnits: { finance: { ...raw.businessUnits.finance, tiers: ['missing'] } } }));
+  const disallowed = parsePolicy({ ...raw, tiers: { ...raw.tiers, other: { ...raw.tiers.research, groups: ['group-other'] } },
+    businessUnits: { finance: { ...raw.businessUnits.finance, tiers: ['other'] } } });
+  assert.throws(() => resolveEntitlement(disallowed, ['group-finance', 'group-research'], 'cli-app', 'sonnet'), /tier_not_allowed/);
 });

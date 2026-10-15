@@ -20,12 +20,23 @@ const unitSchema = z.strictObject({
   clients: names,
   monthlyBudgetUsd: dollars
 });
+const outputTokens = z.number().int().min(1).max(200000);
+const combinationSchema = z.strictObject({
+  monthlyBudgetUsd: dollars.optional(),
+  userMonthlyBudgetUsd: dollars.optional(),
+  models: names.optional(),
+  clients: names.optional(),
+  maxOutputTokens: outputTokens.optional()
+});
 const schema = z.strictObject({
   monthlyBudgetUsd: dollars,
   models: z.record(name, modelSchema),
   clients: z.record(name, z.strictObject({ applicationIds: identifiers })),
-  businessUnits: z.record(name, unitSchema),
-  tiers: z.record(name, unitSchema.extend({ userMonthlyBudgetUsd: dollars }))
+  businessUnits: z.record(name, unitSchema.extend({
+    tiers: names.optional(),
+    tierOverrides: z.record(name, combinationSchema).optional()
+  })),
+  tiers: z.record(name, unitSchema.extend({ userMonthlyBudgetUsd: dollars, maxOutputTokens: outputTokens.optional() }))
 }).superRefine((value, ctx) => {
   for (const key of ['models', 'clients', 'businessUnits', 'tiers'] as const) {
     if (!Object.keys(value[key]).length) ctx.addIssue({ code: 'custom', message: `${key} must not be empty` });
@@ -34,6 +45,18 @@ const schema = z.strictObject({
     if (unit.models.some((id) => !Object.hasOwn(value.models, id)) ||
         unit.clients.some((id) => !Object.hasOwn(value.clients, id))) {
       ctx.addIssue({ code: 'custom', message: 'Unknown model or client reference' });
+    }
+    for (const unit of Object.values(value.businessUnits)) {
+      if (unit.tiers?.some((id) => !Object.hasOwn(value.tiers, id)) ||
+          Object.keys(unit.tierOverrides ?? {}).some((id) => !Object.hasOwn(value.tiers, id))) {
+        ctx.addIssue({ code: 'custom', message: 'Unknown tier reference' });
+      }
+      for (const override of Object.values(unit.tierOverrides ?? {})) {
+        if (override.models?.some((id) => !Object.hasOwn(value.models, id)) ||
+            override.clients?.some((id) => !Object.hasOwn(value.clients, id))) {
+          ctx.addIssue({ code: 'custom', message: 'Unknown combination model or client reference' });
+        }
+      }
     }
   }
   const applications = Object.values(value.clients).flatMap((client) => client.applicationIds);
@@ -60,12 +83,26 @@ export function resolveEntitlement(policy: Policy, groups: string[], application
   if (bus.length !== 1 || tiers.length !== 1) throw new GatewayError(403, 'ambiguous_membership');
   const [bu, unit] = bus[0]!;
   const [tier, tierPolicy] = tiers[0]!;
+  if (unit.tiers && !unit.tiers.includes(tier)) throw new GatewayError(403, 'tier_not_allowed');
+  const combination = unit.tierOverrides?.[tier];
   const client = Object.entries(policy.clients).find(([, value]) => value.applicationIds.includes(applicationId))?.[0];
-  if (!client || !unit.clients.includes(client) || !tierPolicy.clients.includes(client)) {
+  if (!client || !unit.clients.includes(client) || !tierPolicy.clients.includes(client) ||
+      (combination?.clients && !combination.clients.includes(client))) {
     throw new GatewayError(403, 'client_not_allowed');
   }
-  if (!Object.hasOwn(policy.models, model) || !unit.models.includes(model) || !tierPolicy.models.includes(model)) {
+  if (!Object.hasOwn(policy.models, model) || !unit.models.includes(model) || !tierPolicy.models.includes(model) ||
+      (combination?.models && !combination.models.includes(model))) {
     throw new GatewayError(403, 'model_not_allowed');
   }
   return { bu, tier, client, model };
+}
+
+export function entitlementLimits(policy: Policy, entitlement: Entitlement) {
+  const tier = policy.tiers[entitlement.tier]!;
+  const combination = policy.businessUnits[entitlement.bu]!.tierOverrides?.[entitlement.tier];
+  return {
+    monthlyBudgetUsd: combination?.monthlyBudgetUsd ?? tier.monthlyBudgetUsd,
+    userMonthlyBudgetUsd: combination?.userMonthlyBudgetUsd ?? tier.userMonthlyBudgetUsd,
+    maxOutputTokens: Math.min(policy.models[entitlement.model]!.maxOutputTokens, tier.maxOutputTokens ?? 200000, combination?.maxOutputTokens ?? 200000)
+  };
 }

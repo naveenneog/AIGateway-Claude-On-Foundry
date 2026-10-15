@@ -2,13 +2,14 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { SqliteDatabase } from '../src/database.js';
 import { Ledger } from '../src/ledger.js';
-import { priceUsage, reserveCeiling, usdMicros } from '../src/money.js';
+import { priceUsage, reserveCeiling, usdMicros, budgetMicros } from '../src/money.js';
 import { parsePolicy } from '../src/policy.js';
 import { policyFixture } from './support.js';
 
 test('integer micro-USD rounds up and accounts for cache writes and reads', () => {
   const model = parsePolicy(policyFixture()).models.sonnet!;
   assert.equal(usdMicros(0.0000011), 2);
+  assert.equal(budgetMicros(0.0000011), 1);
   assert.equal(priceUsage(model, { input_tokens: 10, output_tokens: 2, cache_read_input_tokens: 100, cache_creation_input_tokens: 20 }), 210);
   assert.equal(reserveCeiling(model, 100), 1_201_500);
   assert.throws(() => priceUsage(model, { input_tokens: 10 }), /usage_unavailable/);

@@ -8,6 +8,11 @@ export function usdMicros(usd: number): number {
   return micros;
 }
 
+export function budgetMicros(usd: number): number {
+  usdMicros(usd);
+  return Math.floor(usd * 1_000_000);
+}
+
 const tokens = z.number().int().nonnegative().max(2_000_000);
 const usageSchema = z.object({
   input_tokens: tokens,

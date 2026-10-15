@@ -11,9 +11,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · [Semantic Ve
   membership resolution without per-person projection. (P-1)
 - Transactional multi-scope micro-USD reservations, cache-aware settlement,
   retained uncertain holds and versioned policy compare-and-swap. (P-2)
+- Entra-authenticated JSON/SSE gateway with request-time Graph membership,
+  explicit upstream modes, per-combination allowances and live admin CAS. (P-3)
+- Isolated Claude CLI profile/token helper and real-client smoke scripts. (P-3)
+- Native AI Gateway preview Bicep, callable Anthropic alias, live quota probes,
+  50k synthetic population benchmark and timed live validation harness. (P-4/P-5)
 
 ### Changed
 
 ### Fixed
+- Current CLI system-message and full-model-ID compatibility.
+- Partial streaming usage deltas no longer discard measured output counts.
+- Budget limits round down while charges round up to integer micro-USD.
 
 ### Removed
