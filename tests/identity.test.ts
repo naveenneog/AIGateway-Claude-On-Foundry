@@ -42,6 +42,17 @@ test('admin access comes only from validated application role', async () => {
   assert.equal((await authenticate(`Bearer ${await token({ admin: true })}`)).admin, false);
 });
 
+test('wrong audience, expired token and a different signing key are rejected', async () => {
+  const authenticate = createAuthenticator({ tenantId: tenant, audience, requiredScope: 'Gateway.Invoke' }, jwks);
+  const claims = { tid: tenant, oid, azp: appId, scp: 'Gateway.Invoke' };
+  const make = () => new SignJWT(claims).setProtectedHeader({ alg: 'RS256', kid: 'test' })
+    .setIssuer(`https://login.microsoftonline.com/${tenant}/v2.0`).setIssuedAt();
+  await assert.rejects(authenticate(`Bearer ${await make().setAudience('api://other').setExpirationTime('5m').sign(keys.privateKey)}`), /invalid_token/);
+  await assert.rejects(authenticate(`Bearer ${await make().setAudience(audience).setExpirationTime(Math.floor(Date.now() / 1000) - 60).sign(keys.privateKey)}`), /invalid_token/);
+  const other = await generateKeyPair('RS256');
+  await assert.rejects(authenticate(`Bearer ${await make().setAudience(audience).setExpirationTime('5m').sign(other.privateKey)}`), /invalid_token/);
+});
+
 test('Graph resolves transitive membership at request time and failures do not become empty access', async () => {
   let calls = 0;
   const graph = new GraphMemberships(async () => 'fixture-graph-token', {
@@ -73,5 +84,17 @@ test('Graph cache is bounded in duration and failures do not cache denials', asy
   assert.deepEqual(await graph.get(user), ['old']);
   now = 11001;
   assert.deepEqual(await graph.get(user), ['new']);
+  assert.equal(calls, 2);
+});
+
+test('a directory failure is retried, never cached as successful empty membership', async () => {
+  let calls = 0;
+  const graph = new GraphMemberships(async () => 'fixture', {
+    ttlSeconds: 60,
+    fetch: async () => ++calls === 1 ? new Response('', { status: 429 }) : Response.json({ value: ['approved-group'] })
+  });
+  const user = { oid, tid: tenant, applicationId: appId, admin: false };
+  await assert.rejects(graph.get(user), /directory_unavailable/);
+  assert.deepEqual(await graph.get(user), ['approved-group']);
   assert.equal(calls, 2);
 });

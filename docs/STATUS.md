@@ -1,8 +1,8 @@
 # Status
 
-**Active packet:** P-3 - Authenticated Anthropic runtime and configurable combinations
+**Active packet:** P-4 - Native FDPO deployment and real-client verification
 **State:** GATE
-**Branch:** main (rename from initial master before publication)
+**Branch:** main
 
 ## Acceptance and evidence
 
@@ -13,7 +13,7 @@
 - Isolated CLI profile, refreshed JWT helper, no saved tokens.
 - Real installed Claude Code returned OK through the governed native FDPO path.
 
-Thirty-five unit/integration/TCP tests pass, strict TypeScript and build pass.
+Thirty-eight unit/integration/TCP tests pass, strict TypeScript and build pass.
 Real local PostgreSQL passed independent-pool contention/CAS/idempotency and
 1,000 BU/tier pair checks. Population measurement and native Azure details are
 separately scoped in `docs/VALIDATION.md`.
@@ -41,6 +41,8 @@ separately scoped in `docs/VALIDATION.md`.
 
 - P-1 `a42733b`: arbitrary BU/tier policy; packet gate passed.
 - P-2 `789e1a3`: atomic USD reservations; independent council; packet gate passed.
+- P-3 `880a7e5`: authenticated JSON/SSE runtime, configurable combinations and
+  installed-client integration; packet gate passed with an oversized-WIP warning.
 
 ## Current autonomous work
 
@@ -53,10 +55,16 @@ Private evidence: ignored `.local/soak-summary.json` and `soak-events.ndjson`.
 Never commit `.local`, tokens, tenant/group/person/subscription IDs or hostnames.
 Do not reset the record to erase a failed sample.
 
-Detached service handle: `live-governance-v4`. Detached measurement:
+Detached service handle: `live-governance-final-v2` (supersedes `live-governance-v4`
+in the original schedule prompt). Detached measurement:
 `eight-hour-live-soak`. Schedule #1 checks every 30 minutes, fixes demonstrated
 failures test-first, and stops after final evidence at the deadline.
 Do not stop the live service until dependent checks finish.
+
+The 18:35 UTC sample failed during restart; Azure CLI diagnostic output broke
+startup. Quiet JSON calls and a PowerShell regression address it. Real flow
+passed again at 18:43 UTC. Keep the failed sample; this is a rolling engineering
+run, not an uninterrupted unchanged-build certification.
 
 ## Remaining delivery work
 

@@ -9,7 +9,7 @@ $ErrorActionPreference = 'Stop'
 if ($GatewayUrl.Scheme -ne 'https' -and -not ($GatewayUrl.IsLoopback -and $GatewayUrl.Scheme -eq 'http')) {
     throw 'Policy updates require HTTPS or a loopback development endpoint.'
 }
-$arguments = @('account', 'get-access-token', '--resource', $TokenResource, '-o', 'json')
+$arguments = @('account', 'get-access-token', '--resource', $TokenResource, '-o', 'json', '--only-show-errors')
 if ($SubscriptionId) { $arguments += @('--subscription', $SubscriptionId) }
 $token = & az @arguments | ConvertFrom-Json
 if ($LASTEXITCODE -ne 0 -or -not $token.accessToken) { throw 'Token acquisition failed; sign in to the correct tenant.' }

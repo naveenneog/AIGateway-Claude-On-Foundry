@@ -4,7 +4,7 @@ param(
     [string]$SubscriptionId
 )
 $ErrorActionPreference = 'Stop'
-$arguments = @('account', 'get-access-token', '--resource', $Resource, '--output', 'json')
+$arguments = @('account', 'get-access-token', '--resource', $Resource, '--output', 'json', '--only-show-errors')
 if ($SubscriptionId) { $arguments += @('--subscription', $SubscriptionId) }
 $token = & az @arguments | ConvertFrom-Json
 if ($LASTEXITCODE -ne 0 -or -not $token.accessToken) { throw 'Token acquisition failed. Run az login for the correct tenant and retry.' }

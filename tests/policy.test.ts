@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFile } from 'node:fs/promises';
 import { parsePolicy, resolveEntitlement, entitlementLimits } from '../src/policy.js';
 import { policyFixture } from './support.js';
 
@@ -57,4 +58,10 @@ test('BU-tier combinations override budgets and output without widening parent p
   const disallowed = parsePolicy({ ...raw, tiers: { ...raw.tiers, other: { ...raw.tiers.research, groups: ['group-other'] } },
     businessUnits: { finance: { ...raw.businessUnits.finance, tiers: ['other'] } } });
   assert.throws(() => resolveEntitlement(disallowed, ['group-finance', 'group-research'], 'cli-app', 'sonnet'), /tier_not_allowed/);
+});
+
+test('published example policy is valid and carries an actual combination override', async () => {
+  const policy = parsePolicy(JSON.parse(await readFile(new URL('../config/policy.example.json', import.meta.url), 'utf8')));
+  assert.equal(policy.businessUnits.finance!.tierOverrides!.analyst!.monthlyBudgetUsd, 200);
+  assert.equal(Object.keys(policy.tiers).length, 3);
 });

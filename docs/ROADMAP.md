@@ -11,7 +11,7 @@
 - [x] P-3: Serve authenticated Anthropic JSON and streaming requests.
   Native AI Gateway and direct Foundry are selectable upstreams; credentials
   never reach developers. Policy changes are versioned and effective on next request.
-- [ ] P-4: Deploy and exercise the FDPO live path, document measured limitations.
+- [x] P-4: Deploy and exercise the FDPO live path, document measured limitations.
   Verify real inference and denied cases separately; do not substitute mocks for Azure.
 - [ ] P-5: Review, measure a 50,000-principal population, publish sanitized sources.
 - [ ] P-6: Complete eight hours of real-live rolling validation without erasing failures.
