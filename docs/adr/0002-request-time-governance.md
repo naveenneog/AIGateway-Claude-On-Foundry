@@ -57,3 +57,16 @@ commands once tests exist; this strengthens rather than relaxes the contract.
 - https://learn.microsoft.com/azure/api-management/ai-gateway-govern-secure-assets
 - https://learn.microsoft.com/azure/api-management/ai-gateway-manage-models-tools
 - https://learn.microsoft.com/graph/api/directoryobject-getmemberobjects
+
+## 2026-10-15 evidence amendment
+
+The live portal's published changelog is newer again: September 24 adds native
+Entra access and model aliases; October 1 adds claim-based USD overrides.
+The initial Learn-based assumption that native Entra is unavailable is withdrawn.
+Live verification is still required. Native per-identity budget overrides do not,
+by themselves, prove aggregate BU budget enforcement or intersection of two
+independent group dimensions. Keep the small governance service for that contract
+and strict pre-reservation semantics; use native features wherever measured.
+Do not grant developer identities a direct upstream route that bypasses it.
+Source: https://ai.gateway.azure.com/docs, public portal bundle
+`/assets/index-CjhCTla2.js`, retrieved 2026-10-15.

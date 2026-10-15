@@ -5,7 +5,7 @@
 - [x] P-1: Resolve arbitrary BU/tier/client/model policies without user projection.
   Given verified group membership, requests resolve exactly one BU and tier;
   ambiguous, absent, or disallowed entitlements fail closed.
-- [ ] P-2: Reserve USD ceilings atomically before forwarding.
+- [x] P-2: Reserve USD ceilings atomically before forwarding.
   Concurrent requests cannot spend the same remaining org, BU, tier, or user budget.
   Missing usage and interrupted requests retain their reservations.
 - [ ] P-3: Serve authenticated Anthropic JSON and streaming requests.

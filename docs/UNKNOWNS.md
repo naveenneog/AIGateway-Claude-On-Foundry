@@ -3,7 +3,7 @@
 | ID | Packet | Unknown | State | Resolution / risk |
 |---|---|---|---|---|
 | U-1 | P-1 | Native gateway USD capability | RESEARCHED | Reference project's September measurements describe costLimit policies newer than July Learn docs. Do not assume absence from Learn means unsupported. See ADR-0002. |
-| U-2 | P-1 | Identity and asset-scoped native permissions | RESEARCHED | Learn documents gateway-scoped runtime keys. Identity shim must not disclose upstream key. https://learn.microsoft.com/azure/api-management/ai-gateway-govern-secure-assets |
+| U-2 | P-1 | Identity and asset-scoped native permissions | RESEARCHED | Portal Sept 24 changelog adds native Entra and alias-scoped RBAC, superseding July Learn. Oct 1 adds claim-based USD overrides. This is not yet proof of shared BU counters or BU/tier intersection. See ADR-0002 amendment and https://ai.gateway.azure.com/docs. |
 | U-3 | P-2 | Exact provider invoice cost | ASSUMED | Configured worst-case context and cache/output price ceilings bound list-price token spend only. Incorrect ceilings invalidate the bound; retain holds for missing/over-ceiling usage, reject server-side billed tools. Not an invoice reconciliation system. |
 | U-4 | P-3 | Entra group changes without scheduled projection | RESEARCHED | Read transitive group memberships from Microsoft Graph at request time. Optional bounded TTL introduces documented revocation delay. Graph failure denies new requests. https://learn.microsoft.com/graph/api/directoryobject-getmemberobjects |
 | U-5 | P-4 | Native model route activation in FDPO | ASSUMED | Reference measured persistent 404; live probe is required. Direct Foundry is an explicit deployment mode, never a silent fallback. |
