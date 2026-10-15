@@ -23,5 +23,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · [Semantic Ve
 - Current CLI system-message and full-model-ID compatibility.
 - Partial streaming usage deltas no longer discard measured output counts.
 - Budget limits round down while charges round up to integer micro-USD.
+- Pilot startup and token helpers suppress Azure CLI warnings on machine-readable
+  output; live interruption is retained in endurance evidence.
 
 ### Removed

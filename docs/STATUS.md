@@ -1,6 +1,6 @@
 # Status
 
-**Active packet:** P-4 - Native FDPO deployment and real-client verification
+**Active packet:** P-5 - Population measurement and public publication
 **State:** GATE
 **Branch:** main
 
@@ -43,6 +43,13 @@ separately scoped in `docs/VALIDATION.md`.
 - P-2 `789e1a3`: atomic USD reservations; independent council; packet gate passed.
 - P-3 `880a7e5`: authenticated JSON/SSE runtime, configurable combinations and
   installed-client integration; packet gate passed with an oversized-WIP warning.
+- P-4 `1321cdf`: verified native preview deployment, quota and live/client probes;
+  warning-safe startup regression. All correctness checks pass.
+
+Current population run: 50,000 simulated callers, 100 BUs x 10 tiers, 128
+in-flight injected requests, 390.50 requests/sec, p95 400.92 ms. Mocked identity,
+Graph and inference; exact 50,000 person rows and zero holds. See validation
+scope and measured limitations; this is not a 50k-concurrent cloud test.
 
 ## Current autonomous work
 
@@ -68,8 +75,8 @@ run, not an uninterrupted unchanged-build certification.
 
 ## Remaining delivery work
 
-Finish packet gate/commits and public repository publication. Update this file
-with their hashes and actual CI result, then use P-6 as the only active packet.
+Finish public repository publication and observe GitHub CI. Update this file
+with the actual CI result, then use P-6 as the only active packet.
 P-6 acceptance: eight elapsed hours, complete evidence and honest failure count;
 rerun full checks, publish sanitized final result, stop schedule/helper service.
 

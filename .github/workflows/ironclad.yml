@@ -10,7 +10,10 @@ on:
 jobs:
   gate:
     name: Ironclad gate (packet)
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -18,15 +21,22 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
           cache: ${{ hashFiles('package-lock.json') != '' && 'npm' || '' }}
 
       - name: Install dependencies
         if: hashFiles('package.json') != ''
-        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Run the gate
         run: node .ironclad/gate.mjs --stage packet
+
+      - name: Real PostgreSQL integration
+        run: npm run test:postgres
+
+      - name: PowerShell client and startup regressions
+        shell: pwsh
+        run: .\scripts\Test-PowerShell.ps1
 
       - name: Gate report (JSON)
         if: always()
@@ -35,6 +45,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ironclad-report
+          name: ironclad-report-${{ matrix.os }}
           path: ironclad-report.json
           if-no-files-found: ignore

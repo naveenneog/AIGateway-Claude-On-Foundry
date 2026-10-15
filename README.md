@@ -77,6 +77,7 @@ Foundry Claude deployment, and an Entra application for this service.
 npm ci
 npm test
 npm run test:postgres
+.\scripts\Test-PowerShell.ps1
 npm run typecheck
 npm run build
 ```
