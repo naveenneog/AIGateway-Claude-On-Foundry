@@ -39,6 +39,9 @@ establish a deployed/production-sized remote governance service.
 - A pilot restart encountered Azure CLI diagnostic text on its JSON output and
   failed to start. Machine-readable CLI calls now suppress warnings; a mocked
   CLI startup/token-output regression passes and real JSON/SSE flow recovered.
+- PostgreSQL pool close could resolve before client sockets disconnected,
+  racing Linux fixture shutdown. A deterministic regression reproduced the early
+  close; the adapter now waits for every connected client's end event.
 
 ## Automated correctness
 
@@ -53,10 +56,11 @@ BU/tier pairs. This is not a managed Azure PostgreSQL throughput test.
 
 [GitHub CI run 38789146966](https://github.com/naveenneog/AIGateway-Claude-On-Foundry/actions/runs/38789146966)
 passed the Ironclad gate, real PostgreSQL test and PowerShell regression on both
-Ubuntu and Windows under Node 24. The first Ubuntu attempt failed with a database
-connection termination; follow-up diagnostics were added, but a later pass does
-not establish its cause or constitute a fix. This remains U-9 for recurrence
-investigation during the rolling window.
+Ubuntu and Windows under Node 24. Early Ubuntu attempts failed with a database
+connection termination; an intermediate passing rerun did not resolve the cause.
+Recurrence exposed the pool-close/disconnect race above, reproduced deterministically.
+Fix `4434a65` passed both platforms in
+[run 38790507795](https://github.com/naveenneog/AIGateway-Claude-On-Foundry/actions/runs/38790507795).
 
 ## Population benchmark
 
@@ -83,6 +87,11 @@ One sample at 18:35 UTC failed while the pilot was being restarted; the replacem
 process hit the Azure CLI output problem above. That failure remains in the log.
 The repaired process passed a separate real JSON/SSE/denial check at 18:43 UTC.
 The ongoing record, including any later failures, determines the final result.
+
+A second sample at 18:56 UTC failed with directory_unavailable (503), before
+inference; a separate 19:00 UTC real probe passed. This was correct fail-closed
+behavior but remains an availability failure. Safe phase/status diagnostics
+were added; its original cause is not established (U-10).
 
 ## Review
 

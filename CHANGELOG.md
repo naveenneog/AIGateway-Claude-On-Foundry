@@ -25,5 +25,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · [Semantic Ve
 - Budget limits round down while charges round up to integer micro-USD.
 - Pilot startup and token helpers suppress Azure CLI warnings on machine-readable
   output; live interruption is retained in endurance evidence.
+- PostgreSQL close waits for client disconnects before returning, eliminating
+  the reproduced pool-bookkeeping/fixture-shutdown race.
+- Directory failures include safe credential/transport/status diagnostics in
+  server logs without exposing credential messages or changing fail-closed access.
 
 ### Removed

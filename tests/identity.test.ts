@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { generateKeyPair, exportJWK, createLocalJWKSet, SignJWT } from 'jose';
 import { createAuthenticator, GraphMemberships } from '../src/identity.js';
+import { GatewayError } from '../src/errors.js';
 
 const tenant = '11111111-1111-4111-8111-111111111111';
 const oid = '22222222-2222-4222-8222-222222222222';
@@ -97,4 +98,22 @@ test('a directory failure is retried, never cached as successful empty membershi
   await assert.rejects(graph.get(user), /directory_unavailable/);
   assert.deepEqual(await graph.get(user), ['approved-group']);
   assert.equal(calls, 2);
+});
+
+test('directory failures retain safe phase/status diagnostics without credential messages', async () => {
+  const user = { oid, tid: tenant, applicationId: appId, admin: false };
+  const credentialFailure = new Error('sensitive credential diagnostic');
+  credentialFailure.name = 'CredentialUnavailableError';
+  const credential = new GraphMemberships(async () => { throw credentialFailure; });
+  await assert.rejects(credential.get(user), (error: unknown) => error instanceof GatewayError &&
+    error.code === 'directory_unavailable' &&
+    JSON.stringify(error.diagnostics) === JSON.stringify({
+      dependency: 'directory', phase: 'credential', causeType: 'CredentialUnavailableError'
+    }));
+  const response = new GraphMemberships(async () => 'fixture', { fetch: async () => new Response('', { status: 503 }) });
+  await assert.rejects(response.get(user), (error: unknown) => error instanceof GatewayError &&
+    error.code === 'directory_unavailable' && error.diagnostics?.status === 503 && error.diagnostics.phase === 'response');
+  const transport = new GraphMemberships(async () => 'fixture', { fetch: async () => { throw new TypeError('sensitive network diagnostic'); } });
+  await assert.rejects(transport.get(user), (error: unknown) => error instanceof GatewayError &&
+    error.diagnostics?.phase === 'request' && error.diagnostics.causeType === 'TypeError');
 });

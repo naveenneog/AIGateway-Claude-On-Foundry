@@ -13,7 +13,7 @@
 - Isolated CLI profile, refreshed JWT helper, no saved tokens.
 - Real installed Claude Code returned OK through the governed native FDPO path.
 
-Thirty-eight unit/integration/TCP tests pass, strict TypeScript and build pass.
+Forty unit/integration/TCP tests pass, strict TypeScript and build pass.
 Real local PostgreSQL passed independent-pool contention/CAS/idempotency and
 1,000 BU/tier pair checks. Population measurement and native Azure details are
 separately scoped in `docs/VALIDATION.md`.
@@ -48,6 +48,8 @@ separately scoped in `docs/VALIDATION.md`.
 - P-5 `f371edc`: current-code 50k population measurement and public publication.
 - CI diagnostics `6277b59`: preserve PostgreSQL failure context and independent
   OS results. [Observed Ubuntu/Windows CI pass](https://github.com/naveenneog/AIGateway-Claude-On-Foundry/actions/runs/38789146966).
+- P-6 correction `4434a65`: deterministic PostgreSQL disconnect-wait regression
+  and fix; [Ubuntu/Windows CI passed](https://github.com/naveenneog/AIGateway-Claude-On-Foundry/actions/runs/38790507795).
 
 Public repository: https://github.com/naveenneog/AIGateway-Claude-On-Foundry
 The local committed-tree gate passed 26 checks with no warnings before the
@@ -69,7 +71,7 @@ Private evidence: ignored `.local/soak-summary.json` and `soak-events.ndjson`.
 Never commit `.local`, tokens, tenant/group/person/subscription IDs or hostnames.
 Do not reset the record to erase a failed sample.
 
-Detached service handle: `live-governance-final-v2` (supersedes `live-governance-v4`
+Detached service handle: `live-governance-final-v3` (supersedes `live-governance-v4`
 in the original schedule prompt). Detached measurement:
 `eight-hour-live-soak`. Schedule #1 checks every 30 minutes, fixes demonstrated
 failures test-first, and stops after final evidence at the deadline.
@@ -80,14 +82,20 @@ startup. Quiet JSON calls and a PowerShell regression address it. Real flow
 passed again at 18:43 UTC. Keep the failed sample; this is a rolling engineering
 run, not an uninterrupted unchanged-build certification.
 
+Another sample at 18:56 UTC failed closed with directory_unavailable (503).
+A separate real probe passed at 19:00 UTC. The original generic error cannot
+establish whether credentials, transport or a Graph HTTP status caused it;
+new safe diagnostics distinguish those phases on recurrence (U-10).
+The diagnostic build restarted and passed readiness at 19:05 UTC.
+
 ## Remaining delivery work
 
 P-6 acceptance: eight elapsed hours, complete evidence and honest failure count;
 rerun full checks, publish sanitized final result, stop schedule/helper service.
-The first Ubuntu PostgreSQL CI attempt failed; the diagnostic follow-up passed
-on both platforms. Its cause is not established (U-9). Repeat CI during this
-window; if it recurs, use the captured failure phase/logs and fix the demonstrated
-cause rather than discarding a failed run or claiming diagnostics fixed it.
+Repeated Ubuntu PostgreSQL failures exposed the pool-close/socket-disconnect
+race; the deterministic fix and subsequent cross-platform pass resolve U-9.
+Continue recurrence monitoring. Investigate U-10 using the new safe dependency
+diagnostics if it recurs; do not guess its cause or bypass live membership checks.
 
 ## Explicit limits / next release work
 

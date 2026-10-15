@@ -67,7 +67,10 @@ export function buildGateway(deps: Dependencies) {
     const fields = error instanceof ZodError ? error.issues.map((issue) =>
       issue.code === 'unrecognized_keys' ? `${issue.path.join('.') || 'request'}: unknown fields ${issue.keys.join(',')}` :
         `${issue.path.join('.') || 'request'}: ${issue.code}`).join('; ') : undefined;
-    request.log.error({ event: code, requestId: request.id, errorType: error instanceof Error ? error.name : 'Unknown' }, 'Gateway request failed');
+    request.log.error({
+      event: code, requestId: request.id, errorType: error instanceof Error ? error.name : 'Unknown',
+      dependency: error instanceof GatewayError ? error.diagnostics : undefined
+    }, 'Gateway request failed');
     reply.code(status).send({ type: 'error', error: { type: code, message: fields ? `Invalid request fields: ${fields}` : code }, request_id: request.id });
   });
   const authenticate = (authorization: string | undefined) => deps.authenticate(authorization);

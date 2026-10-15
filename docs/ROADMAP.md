@@ -19,6 +19,8 @@
   stop the monitoring schedule and helper service when dependent checks finish.
   Investigate U-9 if PostgreSQL CI termination recurs; preserve diagnostic logs
   and do not suppress or relabel a failing test.
+  Investigate U-10 if live directory failures recur, using safe phase/status
+  diagnostics. Never bypass the membership check to improve availability.
 
 ## Explicit exclusions
 

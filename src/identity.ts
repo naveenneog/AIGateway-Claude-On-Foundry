@@ -72,19 +72,32 @@ export class GraphMemberships {
     return request;
   }
   private async load(who: Identity): Promise<string[]> {
+    let token: string;
+    try { token = await this.token(); }
+    catch (error) {
+      throw new GatewayError(503, 'directory_unavailable', {
+        dependency: 'directory', phase: 'credential', causeType: error instanceof Error ? error.name : 'Unknown'
+      });
+    }
     let response: Response;
     try {
       response = await (this.options.fetch ?? fetch)(
         `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(who.oid)}/getMemberObjects`,
         {
           method: 'POST',
-          headers: { authorization: `Bearer ${await this.token()}`, 'content-type': 'application/json' },
+          headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
           body: JSON.stringify({ securityEnabledOnly: true }),
           signal: AbortSignal.timeout(10000)
         }
       );
-    } catch { throw new GatewayError(503, 'directory_unavailable'); }
-    if (!response.ok) throw new GatewayError(503, 'directory_unavailable');
+    } catch (error) {
+      throw new GatewayError(503, 'directory_unavailable', {
+        dependency: 'directory', phase: 'request', causeType: error instanceof Error ? error.name : 'Unknown'
+      });
+    }
+    if (!response.ok) throw new GatewayError(503, 'directory_unavailable', {
+      dependency: 'directory', phase: 'response', status: response.status
+    });
     let value: unknown;
     try { value = await response.json(); } catch { throw new GatewayError(503, 'directory_invalid_response'); }
     const result = z.object({ value: z.array(z.string().min(1).max(200)).max(11000) }).safeParse(value);
