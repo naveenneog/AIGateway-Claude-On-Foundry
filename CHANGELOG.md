@@ -33,5 +33,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · [Semantic Ve
   avoiding ambient cross-tenant authentication without changing global CLI state.
 - Temporary-key verification fails if key revocation fails; isolated PowerShell
   regressions cover account selection, endpoint restrictions and cleanup failure.
+- Upstream 502s now log whether token acquisition or the model request failed,
+  with the cause type only, so transient upstream failures can be classified.
 
 ### Removed

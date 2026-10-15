@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { AzureCliCredential, ManagedIdentityCredential } from '@azure/identity';
 import { createCredential, createUpstream, parseEnvironment } from '../src/runtime.js';
+import { GatewayError } from '../src/errors.js';
 
 test('runtime refuses production SQLite, insecure upstreams and missing identity config', () => {
   assert.throws(() => parseEnvironment({ NODE_ENV: 'production' }), /configuration/);
@@ -13,6 +14,33 @@ test('runtime refuses production SQLite, insecure upstreams and missing identity
   assert.equal(parseEnvironment(env).mode, 'native');
   assert.throws(() => parseEnvironment({ ...env, UPSTREAM_BASE_URL: 'http://test.azure-api.net' }), /configuration/);
   assert.throws(() => parseEnvironment({ ...env, UPSTREAM_BASE_URL: 'https://attacker.invalid' }), /configuration/);
+});
+
+test('upstream failures keep safe phase diagnostics without leaking cause messages', async () => {
+  const signal = new AbortController().signal;
+  const tokenFailure = createUpstream({
+    mode: 'native', baseUrl: 'https://test.azure-api.net/default/models/anthropic',
+    token: async () => { throw new TypeError('secret-token-detail'); },
+    fetch: async () => { throw new Error('fetch must not run without a token'); }
+  });
+  await assert.rejects(tokenFailure({ model: 'claude-alias' }, signal), (error: unknown) => {
+    assert.ok(error instanceof GatewayError);
+    assert.equal(error.status, 502);
+    assert.equal(error.code, 'upstream_unavailable');
+    assert.deepEqual(error.diagnostics, { dependency: 'upstream', phase: 'credential', causeType: 'TypeError' });
+    assert.doesNotMatch(JSON.stringify(error.diagnostics), /secret-token-detail/);
+    return true;
+  });
+  const networkFailure = createUpstream({
+    mode: 'native', baseUrl: 'https://test.azure-api.net/default/models/anthropic',
+    token: async () => 'fixture-server-token',
+    fetch: async () => { throw new DOMException('socket hang up', 'AbortError'); }
+  });
+  await assert.rejects(networkFailure({ model: 'claude-alias' }, signal), (error: unknown) => {
+    assert.ok(error instanceof GatewayError);
+    assert.deepEqual(error.diagnostics, { dependency: 'upstream', phase: 'request', causeType: 'AbortError' });
+    return true;
+  });
 });
 
 test('native upstream uses server token, fixed path and no redirects or caller headers', async () => {

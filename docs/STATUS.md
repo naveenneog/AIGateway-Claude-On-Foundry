@@ -101,6 +101,19 @@ Full real JSON/SSE/denial flow passed at 19:27 UTC, and the scheduled sample
 also passed. Snapshot at 19:27: **4 passing, 4 failing**, not complete.
 Failed samples and unsuccessful restart attempts have not been erased.
 
+Failure triage at 4.7 h (23 passing, 5 failing, not complete):
+1. 18:35 UTC restart: loopback refused connection; caused by Azure CLI warnings
+   in JSON output, fixed in `1321cdf`.
+2-4. 18:56/19:06/19:16 UTC 503s: fail-closed directory lookups; the observed
+   cross-tenant credential selection was fixed in `8bc5330` (the first generic
+   503 cannot be classified retroactively).
+5. 21:42 UTC 502 `upstream_unavailable`: the native upstream call threw
+   before a response; it was transient (all later samples passed). Token and
+   transport failures were indistinguishable, so upstream errors now carry safe
+   phase/cause-type diagnostics. The running pilot was not restarted mid-soak,
+   so this sample remains unclassified; no retry was added because inference
+   is not idempotent and Anthropic SDK clients retry 5xx by default.
+
 ## Remaining delivery work
 
 P-6 acceptance: eight elapsed hours, complete evidence and honest failure count;

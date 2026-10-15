@@ -51,16 +51,21 @@ export function createUpstream(options: {
   token: () => Promise<string>; fetch?: typeof fetch
 }) {
   return async (body: Record<string, unknown>, signal: AbortSignal) => {
+    const unavailable = (phase: 'credential' | 'request', error: unknown) => new GatewayError(502, 'upstream_unavailable', {
+      dependency: 'upstream', phase, causeType: error instanceof Error ? error.name : 'Unknown'
+    });
+    let token: string;
+    try { token = await options.token(); } catch (error) { throw unavailable('credential', error); }
     try {
       return await (options.fetch ?? fetch)(`${options.baseUrl}/v1/messages`, {
         method: 'POST', redirect: 'error', signal,
         headers: {
-          authorization: `Bearer ${await options.token()}`,
+          authorization: `Bearer ${token}`,
           'content-type': 'application/json',
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify(body)
       });
-    } catch { throw new GatewayError(502, 'upstream_unavailable'); }
+    } catch (error) { throw unavailable('request', error); }
   };
 }
