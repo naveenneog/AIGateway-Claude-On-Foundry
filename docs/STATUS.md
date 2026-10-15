@@ -50,10 +50,13 @@ separately scoped in `docs/VALIDATION.md`.
   OS results. [Observed Ubuntu/Windows CI pass](https://github.com/naveenneog/AIGateway-Claude-On-Foundry/actions/runs/38789146966).
 - P-6 correction `4434a65`: deterministic PostgreSQL disconnect-wait regression
   and fix; [Ubuntu/Windows CI passed](https://github.com/naveenneog/AIGateway-Claude-On-Foundry/actions/runs/38790507795).
+- P-6 correction `8bc5330`: explicit account selection, scoped Graph/ARM requests
+  and fail-closed verifier cleanup;
+  [Ubuntu/Windows CI passed](https://github.com/naveenneog/AIGateway-Claude-On-Foundry/actions/runs/38794951979).
+  Installed Claude Code also passed against this corrected live service.
 
 Public repository: https://github.com/naveenneog/AIGateway-Claude-On-Foundry
-The local committed-tree gate passed 26 checks with no warnings before the
-subsequent intermittent-CI investigation was recorded.
+The latest packet gate passed 26 checks with no warnings or failures.
 
 Current population run: 50,000 simulated callers, 100 BUs x 10 tiers, 128
 in-flight injected requests, 390.50 requests/sec, p95 400.92 ms. Mocked identity,

@@ -69,6 +69,10 @@ connection termination; an intermediate passing rerun did not resolve the cause.
 Recurrence exposed the pool-close/disconnect race above, reproduced deterministically.
 Fix `4434a65` passed both platforms in
 [run 38790507795](https://github.com/naveenneog/AIGateway-Claude-On-Foundry/actions/runs/38790507795).
+Current credential/cleanup fix `8bc5330` passed both platforms in
+[run 38794951979](https://github.com/naveenneog/AIGateway-Claude-On-Foundry/actions/runs/38794951979),
+including all 41 normal tests, real PostgreSQL and the isolated PowerShell
+regressions. Installed Claude Code passed again against that corrected live build.
 
 ## Population benchmark
 
