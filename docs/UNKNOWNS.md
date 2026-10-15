@@ -1,0 +1,12 @@
+# Known unknowns
+
+| ID | Packet | Unknown | State | Resolution / risk |
+|---|---|---|---|---|
+| U-1 | P-1 | Native gateway USD capability | RESEARCHED | Reference project's September measurements describe costLimit policies newer than July Learn docs. Do not assume absence from Learn means unsupported. See ADR-0002. |
+| U-2 | P-1 | Identity and asset-scoped native permissions | RESEARCHED | Learn documents gateway-scoped runtime keys. Identity shim must not disclose upstream key. https://learn.microsoft.com/azure/api-management/ai-gateway-govern-secure-assets |
+| U-3 | P-2 | Exact provider invoice cost | ASSUMED | Configured worst-case context and cache/output price ceilings bound list-price token spend only. Incorrect ceilings invalidate the bound; retain holds for missing/over-ceiling usage, reject server-side billed tools. Not an invoice reconciliation system. |
+| U-4 | P-3 | Entra group changes without scheduled projection | RESEARCHED | Read transitive group memberships from Microsoft Graph at request time. Optional bounded TTL introduces documented revocation delay. Graph failure denies new requests. https://learn.microsoft.com/graph/api/directoryobject-getmemberobjects |
+| U-5 | P-4 | Native model route activation in FDPO | ASSUMED | Reference measured persistent 404; live probe is required. Direct Foundry is an explicit deployment mode, never a silent fallback. |
+| U-6 | P-4 | Free model usage / gateway pricing | RESEARCHED | Preview gateway pricing is not a promise of free model inference. Related resources and models can be billed. https://learn.microsoft.com/azure/api-management/ai-gateway-overview |
+| U-7 | P-5 | 50k population versus concurrent capacity | ASSUMED | Validate population cardinality locally; publish actual throughput and concurrency. Managed DB / Graph / model quotas remain release constraints, not solved by counting users. |
+| U-8 | P-3 | CLI versus Desktop enforceability | ASSUMED | Separate allowed Entra application IDs bind policy to token client identity, not executable. Public-client tokens are bearer credentials; do not promise binary attestation. |

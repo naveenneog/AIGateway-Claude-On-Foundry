@@ -1,0 +1,13 @@
+# Ironclad: secrets never enter git
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+coverage/
+.local/
+*.db
+*.db-shm
+*.db-wal
+*.log
+*.tsbuildinfo
