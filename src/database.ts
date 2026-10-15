@@ -46,9 +46,15 @@ export class SqliteDatabase implements Database {
 
 export class PostgresDatabase implements Database {
   private readonly pool: pg.Pool;
+  private readonly disconnects = new Set<Promise<void>>();
   readonly lock = ' FOR UPDATE';
   constructor(connectionString: string) {
     this.pool = new pg.Pool({ connectionString, max: 10, connectionTimeoutMillis: 5000, statement_timeout: 10000 });
+    this.pool.on('connect', (client) => {
+      const disconnected = new Promise<void>((resolve) => client.once('end', resolve));
+      this.disconnects.add(disconnected);
+      void disconnected.then(() => this.disconnects.delete(disconnected));
+    });
   }
   private session(client: pg.Pool | pg.PoolClient): Session {
     return {
@@ -77,5 +83,8 @@ export class PostgresDatabase implements Database {
       client.release();
     }
   }
-  async close() { await this.pool.end(); }
+  async close() {
+    await this.pool.end();
+    await Promise.all(this.disconnects);
+  }
 }
