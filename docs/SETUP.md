@@ -74,6 +74,14 @@ client ID and delegated scope. Configure `TOKEN_AUDIENCE` to the token's actual
 API audience (v2 tokens can use the application GUID rather than its URI).
 No authentication bypass is provided for local development.
 
+Development uses **AzureCliCredential**, not an ambient credential chain. Run
+`az login` for the intended tenant. If you have multiple accounts/subscriptions,
+set `DEVELOPMENT_SUBSCRIPTION_ID` to the intended subscription belonging to
+`TENANT_ID`; otherwise the CLI credential selects the configured tenant.
+The CLI process has a 15-second bound. Azure CLI rejects supplying tenant and
+subscription selectors together, so the runtime uses one unambiguous selector.
+Production ignores this development selector and uses managed identity.
+
 Set `DATABASE_URL` to a durable PostgreSQL database for production. Use TLS with
 certificate verification and an approved network boundary. `max: 10` pool
 connections per replica must fit the database's connection budget. SQLite is
@@ -92,6 +100,10 @@ was deployed or production sized merely because the native gateway was deployed.
 
 `Start-LocalLivePilot.ps1` derives a private policy from the signed-in verifier's
 existing group membership and uses Azure CLI credentials for Graph/native calls.
+Bootstrap and native probes acquire explicit subscription-selected Graph/ARM
+tokens through `Invoke-AzureRequest.ps1`; they do not rely on `az rest` choosing
+the intended account. The helper permits only approved HTTPS endpoints and no
+redirects, and never puts bearer tokens in command arguments.
 It writes only ignored `.local` data and binds loopback. Its deliberately high
 illustrative price ceilings are test controls, not a price book.
 

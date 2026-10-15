@@ -17,12 +17,9 @@ $tokenJson = $null
 $encoded = $token.accessToken.Split('.')[1].Replace('-', '+').Replace('_', '/')
 $encoded = $encoded.PadRight([int]([Math]::Ceiling($encoded.Length / 4.0) * 4), '=')
 $claims = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($encoded)) | ConvertFrom-Json
-$payload = New-TemporaryFile
-try {
-    '{"securityEnabledOnly":true}' | Set-Content -LiteralPath $payload.FullName -Encoding utf8
-    $groups = & az rest --method post --url "https://graph.microsoft.com/v1.0/users/$($claims.oid)/getMemberObjects" --body "@$($payload.FullName)" --only-show-errors -o json | ConvertFrom-Json
-    if ($LASTEXITCODE -ne 0 -or -not $groups.value.Count) { throw 'Live pilot requires a resolvable existing security-group membership' }
-} finally { Remove-Item -LiteralPath $payload.FullName }
+$groups = & (Join-Path $PSScriptRoot 'Invoke-AzureRequest.ps1') -SubscriptionId $SubscriptionId `
+    -Uri "https://graph.microsoft.com/v1.0/users/$($claims.oid)/getMemberObjects" -Method Post -Body '{"securityEnabledOnly":true}'
+if (-not $groups.value.Count) { throw 'Live pilot requires a resolvable existing security-group membership' }
 $policy = @{
     monthlyBudgetUsd = 1000
     models = @{ $ClientModelId = @{
@@ -38,6 +35,7 @@ $policyPath = Join-Path $local 'pilot-policy.json'
 $policy | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $policyPath -Encoding utf8
 $env:NODE_ENV = 'development'
 $env:TENANT_ID = $claims.tid
+$env:DEVELOPMENT_SUBSCRIPTION_ID = $SubscriptionId
 $env:TOKEN_AUDIENCE = $claims.aud
 $env:REQUIRED_SCOPE = 'Data.All'
 $env:UPSTREAM_MODE = 'native'

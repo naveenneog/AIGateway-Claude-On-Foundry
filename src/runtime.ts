@@ -1,9 +1,11 @@
 import { z } from 'zod';
+import { AzureCliCredential, ManagedIdentityCredential } from '@azure/identity';
 import { GatewayError } from './errors.js';
 
 export function parseEnvironment(env: NodeJS.ProcessEnv) {
   const parsed = z.object({
     TENANT_ID: z.string().uuid(),
+    DEVELOPMENT_SUBSCRIPTION_ID: z.string().uuid().optional(),
     TOKEN_AUDIENCE: z.string().min(1),
     REQUIRED_SCOPE: z.string().default('Gateway.Invoke'),
     UPSTREAM_MODE: z.enum(['native', 'foundry']),
@@ -24,11 +26,24 @@ export function parseEnvironment(env: NodeJS.ProcessEnv) {
     throw new Error('Invalid gateway configuration: require approved HTTPS upstream and PostgreSQL in production');
   }
   return {
-    tenantId: value.TENANT_ID, audience: value.TOKEN_AUDIENCE, requiredScope: value.REQUIRED_SCOPE,
+    tenantId: value.TENANT_ID, developmentSubscriptionId: value.DEVELOPMENT_SUBSCRIPTION_ID,
+    audience: value.TOKEN_AUDIENCE, requiredScope: value.REQUIRED_SCOPE,
     mode: value.UPSTREAM_MODE, baseUrl: value.UPSTREAM_BASE_URL.replace(/\/$/, ''),
     databaseUrl: value.DATABASE_URL, sqlitePath: value.LOCAL_SQLITE_PATH,
     graphCacheSeconds: value.GRAPH_CACHE_SECONDS, port: value.PORT, policyFile: value.POLICY_FILE
   };
+}
+
+export function createCredential(
+  config: { tenantId: string; developmentSubscriptionId?: string },
+  env: NodeJS.ProcessEnv = process.env
+) {
+  return env.NODE_ENV === 'production' ?
+    new ManagedIdentityCredential(env.AZURE_CLIENT_ID ? { clientId: env.AZURE_CLIENT_ID } : {}) :
+    new AzureCliCredential({
+      ...(config.developmentSubscriptionId ? { subscription: config.developmentSubscriptionId } : { tenantId: config.tenantId }),
+      processTimeoutInMs: 15000
+    });
 }
 
 export function createUpstream(options: {

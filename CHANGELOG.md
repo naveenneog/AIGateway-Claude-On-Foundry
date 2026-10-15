@@ -29,5 +29,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · [Semantic Ve
   the reproduced pool-bookkeeping/fixture-shutdown race.
 - Directory failures include safe credential/transport/status diagnostics in
   server logs without exposing credential messages or changing fail-closed access.
+- Development CLI credentials and live Azure probes select an explicit account,
+  avoiding ambient cross-tenant authentication without changing global CLI state.
+- Temporary-key verification fails if key revocation fails; isolated PowerShell
+  regressions cover account selection, endpoint restrictions and cleanup failure.
 
 ### Removed

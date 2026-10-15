@@ -11,14 +11,12 @@ $base = "https://management.azure.com/subscriptions/$SubscriptionId/resourceGrou
 $keyId = "$base/apiKeys/pilot-verification"
 $version = '?api-version=2025-09-01-preview'
 $body = '{"properties":{"displayName":"Isolated pilot verification"}}'
-$payload = New-TemporaryFile
+$azureRequest = Join-Path $PSScriptRoot 'Invoke-AzureRequest.ps1'
 try {
     if ($Authentication -eq 'Key') {
-        Set-Content -LiteralPath $payload.FullName -Value $body -Encoding utf8
-        $null = & az rest --method put --url "$keyId$version" --body "@$($payload.FullName)" --output none
-        if ($LASTEXITCODE -ne 0) { throw 'Cannot create isolated verification key' }
-        $keys = & az rest --method post --url "$keyId/listSecrets$version" --only-show-errors --output json | ConvertFrom-Json
-        if ($LASTEXITCODE -ne 0 -or -not $keys.primaryKey) { throw 'Cannot obtain verification credential' }
+        $null = & $azureRequest -SubscriptionId $SubscriptionId -Uri "$keyId$version" -Method Put -Body $body
+        $keys = & $azureRequest -SubscriptionId $SubscriptionId -Uri "$keyId/listSecrets$version" -Method Post
+        if (-not $keys.primaryKey) { throw 'Cannot obtain verification credential' }
         $headers = @{ 'api-key' = $keys.primaryKey; 'anthropic-version' = '2023-06-01' }
     } else {
         $token = & az account get-access-token --subscription $SubscriptionId --resource 'https://azure-api.net/aigateway' --only-show-errors -o json | ConvertFrom-Json
@@ -30,11 +28,10 @@ try {
     [pscustomobject]@{ mode = 'native-ai-gateway'; status = [int]$response.StatusCode; body = $response.Content } | ConvertTo-Json -Depth 8
     if ($response.StatusCode -ne 200) { throw "Native inference returned HTTP $($response.StatusCode)" }
 } finally {
-    Remove-Item -LiteralPath $payload.FullName
     $keys = $null
     $token = $null
     if ($Authentication -eq 'Key') {
-        $null = & az rest --method delete --url "$keyId$version" --output none
-        if ($LASTEXITCODE -ne 0) { Write-Warning 'Verification key cleanup failed; revoke pilot-verification before sharing the gateway.' }
+        try { $null = & $azureRequest -SubscriptionId $SubscriptionId -Uri "$keyId$version" -Method Delete }
+        catch { throw 'Verification key cleanup failed; revoke pilot-verification before sharing the gateway.' }
     }
 }

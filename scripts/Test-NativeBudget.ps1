@@ -8,8 +8,8 @@ param(
 $ErrorActionPreference = 'Stop'
 $url = "https://management.azure.com/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.ApiManagement/service/$GatewayName/workspaces/default/aliases/$AliasName"
 $url += '?api-version=2025-09-01-preview'
-$original = & az rest --method get --url $url --only-show-errors -o json | ConvertFrom-Json
-if ($LASTEXITCODE -ne 0) { throw 'Cannot read alias before budget experiment' }
+$azureRequest = Join-Path $PSScriptRoot 'Invoke-AzureRequest.ps1'
+$original = & $azureRequest -SubscriptionId $SubscriptionId -Uri $url
 $token = & az account get-access-token --subscription $SubscriptionId --resource 'https://azure-api.net/aigateway' --only-show-errors -o json | ConvertFrom-Json
 if ($LASTEXITCODE -ne 0) { throw 'Cannot obtain native runtime token' }
 $restore = New-TemporaryFile
@@ -19,8 +19,7 @@ try {
     $policies = @($original.properties.policies | Where-Object { $_.id -ne 'pilot-daily' })
     $policies += @{ type = 'costLimit'; id = 'pilot-daily'; amount = 0.000001; period = 'day'; counterKey = @('identity'); scope = 'resource' }
     @{ properties = @{ policies = $policies } } | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $experiment.FullName -Encoding utf8
-    $null = & az rest --method patch --url $url --body "@$($experiment.FullName)" --output none
-    if ($LASTEXITCODE -ne 0) { throw 'Native cost policy update rejected' }
+    $null = & $azureRequest -SubscriptionId $SubscriptionId -Uri $url -Method Patch -Body (Get-Content -LiteralPath $experiment.FullName -Raw)
     $request = @{ model = $AliasName; max_tokens = 8; messages = @(@{ role = 'user'; content = 'Reply OK.' }) } | ConvertTo-Json -Depth 5
     $headers = @{ Authorization = "Bearer $($token.accessToken)"; 'anthropic-version' = '2023-06-01' }
     $blocked = $false
@@ -33,8 +32,8 @@ try {
     }
     if (-not $blocked) { throw 'Native cost cap not observed within bounded propagation window' }
 } finally {
-    $null = & az rest --method patch --url $url --body "@$($restore.FullName)" --output none
-    if ($LASTEXITCODE -ne 0) { Write-Error 'URGENT: native budget restore failed; pilot remains on experiment cap.' }
+    try { $null = & $azureRequest -SubscriptionId $SubscriptionId -Uri $url -Method Patch -Body (Get-Content -LiteralPath $restore.FullName -Raw) }
+    catch { throw "URGENT: native budget restore failed; original policy snapshot retained at $($restore.FullName)." }
     Remove-Item -LiteralPath $restore.FullName
     Remove-Item -LiteralPath $experiment.FullName
     $token = $null

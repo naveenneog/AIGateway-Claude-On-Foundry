@@ -13,7 +13,7 @@
 - Isolated CLI profile, refreshed JWT helper, no saved tokens.
 - Real installed Claude Code returned OK through the governed native FDPO path.
 
-Forty unit/integration/TCP tests pass, strict TypeScript and build pass.
+Forty-one unit/integration/TCP tests pass, strict TypeScript and build pass.
 Real local PostgreSQL passed independent-pool contention/CAS/idempotency and
 1,000 BU/tier pair checks. Population measurement and native Azure details are
 separately scoped in `docs/VALIDATION.md`.
@@ -71,7 +71,7 @@ Private evidence: ignored `.local/soak-summary.json` and `soak-events.ndjson`.
 Never commit `.local`, tokens, tenant/group/person/subscription IDs or hostnames.
 Do not reset the record to erase a failed sample.
 
-Detached service handle: `live-governance-final-v3` (supersedes `live-governance-v4`
+Detached service handle: `live-governance-pinned-v3` (supersedes `live-governance-v4`
 in the original schedule prompt). Detached measurement:
 `eight-hour-live-soak`. Schedule #1 checks every 30 minutes, fixes demonstrated
 failures test-first, and stops after final evidence at the deadline.
@@ -88,14 +88,26 @@ establish whether credentials, transport or a Graph HTTP status caused it;
 new safe diagnostics distinguish those phases on recurrence (U-10).
 The diagnostic build restarted and passed readiness at 19:05 UTC.
 
+Recurrence at 19:06 showed Graph HTTP 404. A direct credential check confirmed
+the ambient default credential belonged to a different tenant. Explicit
+subscription-selected CLI credentials returned the expected tenant/principal
+and Graph 200. Bootstrap's implicit `az rest` authentication also returned 404
+even with a subscription argument; explicit in-memory Graph/ARM bearer
+authentication fixed that path without changing global Azure CLI settings.
+Full real JSON/SSE/denial flow passed at 19:27 UTC, and the scheduled sample
+also passed. Snapshot at 19:27: **4 passing, 4 failing**, not complete.
+Failed samples and unsuccessful restart attempts have not been erased.
+
 ## Remaining delivery work
 
 P-6 acceptance: eight elapsed hours, complete evidence and honest failure count;
 rerun full checks, publish sanitized final result, stop schedule/helper service.
 Repeated Ubuntu PostgreSQL failures exposed the pool-close/socket-disconnect
 race; the deterministic fix and subsequent cross-platform pass resolve U-9.
-Continue recurrence monitoring. Investigate U-10 using the new safe dependency
-diagnostics if it recurs; do not guess its cause or bypass live membership checks.
+Continue recurrence monitoring. The observed U-10 credential-selection bug is
+fixed; the earlier generic 503 cannot be retrospectively classified with
+certainty. Keep safe diagnostics and investigate any new failure without
+bypassing live membership checks.
 
 ## Explicit limits / next release work
 

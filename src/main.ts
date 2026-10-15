@@ -1,17 +1,14 @@
 import { readFile } from 'node:fs/promises';
-import { DefaultAzureCredential, ManagedIdentityCredential } from '@azure/identity';
 import { PostgresDatabase, SqliteDatabase } from './database.js';
 import { GatewayError } from './errors.js';
 import { buildGateway } from './gateway.js';
 import { createAuthenticator, GraphMemberships } from './identity.js';
 import { Ledger } from './ledger.js';
 import { parsePolicy } from './policy.js';
-import { createUpstream, parseEnvironment } from './runtime.js';
+import { createCredential, createUpstream, parseEnvironment } from './runtime.js';
 
 const config = parseEnvironment(process.env);
-const credential = process.env.NODE_ENV === 'production' ?
-  new ManagedIdentityCredential(process.env.AZURE_CLIENT_ID ? { clientId: process.env.AZURE_CLIENT_ID } : {}) :
-  new DefaultAzureCredential();
+const credential = createCredential(config);
 const getToken = async (scope: string) => {
   const result = await credential.getToken(scope);
   if (!result?.token) throw new GatewayError(503, 'server_identity_unavailable');

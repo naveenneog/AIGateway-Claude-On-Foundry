@@ -42,6 +42,14 @@ establish a deployed/production-sized remote governance service.
 - PostgreSQL pool close could resolve before client sockets disconnected,
   racing Linux fixture shutdown. A deterministic regression reproduced the early
   close; the adapter now waits for every connected client's end event.
+- Live directory failures recurred as Graph 404. The ambient development
+  credential returned a token from a different tenant. Explicit CLI account
+  selection returned the expected tenant/principal and Graph 200. Bootstrap
+  and native probes also use explicit subscription-selected bearer authentication,
+  rather than relying on implicit `az rest` authentication.
+- Native temporary-key cleanup failure previously emitted only a warning.
+  A mocked regression reproduced a success-shaped result; cleanup failure now
+  fails the verifier. Real temporary-key inference and deletion subsequently passed.
 
 ## Automated correctness
 
@@ -90,8 +98,13 @@ The ongoing record, including any later failures, determines the final result.
 
 A second sample at 18:56 UTC failed with directory_unavailable (503), before
 inference; a separate 19:00 UTC real probe passed. This was correct fail-closed
-behavior but remains an availability failure. Safe phase/status diagnostics
-were added; its original cause is not established (U-10).
+behavior but remains an availability failure. Later diagnostic failures exposed
+the credential-selection issue above; the original generic 503 cannot be
+retrospectively assigned that cause with certainty.
+
+At 19:27 UTC, full real JSON/SSE/denial flow and the scheduled sample passed
+after explicit credential selection. The record then contained **4 passing and
+4 failing samples**, incomplete. This is a snapshot, not the final result.
 
 ## Review
 
