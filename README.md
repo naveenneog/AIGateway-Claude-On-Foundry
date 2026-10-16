@@ -31,7 +31,8 @@ canonical model alias, real inference, native USD quota denial, governed JSON/SS
 and installed Claude Code **2.1.272** returning `OK`.
 See [validation evidence](docs/VALIDATION.md) for exactly what was measured.
 
-**Not claimed:** a completed eight-hour soak before its deadline, 50,000 concurrent
+**Not claimed:** a clean eight-hour soak (it completed 41 passed / 5 failed, see
+validation), 50,000 concurrent
 streams, exact Azure-invoice accounting, verified Claude Desktop UI onboarding,
 or a fully hosted production governance-service deployment. The current live
 governance pilot runs on loopback against the real Azure native gateway.
@@ -188,6 +189,6 @@ npm run scale
 .\scripts\Test-ClaudeClient.ps1 -SettingsPath .local\claude.settings.json
 ```
 
-The eight-hour live soak and scheduled autonomous follow-up are documented in
-[status](docs/STATUS.md). Private runtime files stay in ignored `.local`.
+The eight-hour live soak result (41/46 samples passed, failures disclosed) is in
+[validation](docs/VALIDATION.md). Private runtime files stay in ignored `.local`.
 MIT licensed.

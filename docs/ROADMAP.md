@@ -14,7 +14,8 @@
 - [x] P-4: Deploy and exercise the FDPO live path, document measured limitations.
   Verify real inference and denied cases separately; do not substitute mocks for Azure.
 - [x] P-5: Review, measure a 50,000-principal population, publish sanitized sources.
-- [ ] P-6: Complete eight hours of real-live rolling validation without erasing failures.
+- [x] P-6: Complete eight hours of real-live rolling validation without erasing failures.
+  Done 2026-10-16: 8.00 h, 41 passed / 5 failed (disclosed, not a clean pass).
   Record observed elapsed time and failure count, publish sanitized evidence and
   stop the monitoring schedule and helper service when dependent checks finish.
   Investigate U-9 if PostgreSQL CI termination recurs; preserve diagnostic logs

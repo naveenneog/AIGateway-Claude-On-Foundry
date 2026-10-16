@@ -89,7 +89,7 @@ Started 2026-10-15 18:14:40 UTC. Deadline 2026-10-16 02:14:40 UTC
 (07:44 IST). Real governed JSON/SSE and denial probes run at 10-minute intervals,
 with an isolated real Claude Code smoke approximately hourly.
 
-**In progress, not yet a pass.** The ignored `.local/soak-summary.json` and
+**In-progress record during the run.** The ignored `.local/soak-summary.json` and
 `.local/soak-events.ndjson` are the measurement record. Scheduled autonomous
 follow-up checks the record and fixes demonstrated failures. Raw private runtime
 data must never be committed. Any failed sample remains part of the result;
@@ -108,7 +108,31 @@ retrospectively assigned that cause with certainty.
 
 At 19:27 UTC, full real JSON/SSE/denial flow and the scheduled sample passed
 after explicit credential selection. The record then contained **4 passing and
-4 failing samples**, incomplete. This is a snapshot, not the final result.
+4 failing samples**, incomplete.
+
+### Final result (completed 2026-10-16 02:14:41 UTC)
+
+**Not a clean eight-hour pass.** Elapsed 8.00 h; **46 samples: 41 passed,
+5 failed** (89%). The harness exited non-zero as designed because failures exist.
+The build also changed during the run: the credential correction was applied by
+restart near 19:25 UTC, and diagnostics commit `e0839da` was never deployed live,
+so this is a rolling engineering measurement,
+not an unchanged-build endurance certification.
+
+| Failure (UTC) | Category | Disposition |
+|---|---|---|
+| 18:35 | Loopback service restarting; connection refused | Fixed `1321cdf` (CLI warnings broke JSON) |
+| 18:56, 19:06, 19:16 | Fail-closed directory lookup, 503 | Cross-tenant credential selection fixed `8bc5330`; first 503 not retroactively classifiable |
+| 21:42 | Native upstream request threw, 502 | Transient, unclassified; diagnostics added `e0839da` |
+
+After the 19:16 credential fix: **38 of 39 samples passed** over ~6.9 h; the only
+failure was the transient upstream 502. Every passing sample returned JSON 200
+with settled budget, SSE 200, disallowed model 403 and anonymous 401. Passing
+sample wall time (two real inferences plus denials): min 16.7 s, median 19.5 s,
+max 38.1 s. Installed Claude Code ran inside 7 passing samples (every sixth);
+its result is not recorded separately from the sample. Final regression after
+completion: 42 unit/TCP tests, real PostgreSQL integration, typecheck, isolated
+PowerShell regression and Ironclad packet gate all passed.
 
 ## Review
 

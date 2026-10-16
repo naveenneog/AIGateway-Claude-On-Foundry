@@ -1,7 +1,7 @@
 # Status
 
-**Active packet:** P-6 - Eight-hour rolling live validation
-**State:** VALIDATING
+**Active packet:** none (P-6 complete with disclosed failures)
+**State:** DONE
 **Branch:** main
 
 ## Acceptance and evidence
@@ -13,7 +13,7 @@
 - Isolated CLI profile, refreshed JWT helper, no saved tokens.
 - Real installed Claude Code returned OK through the governed native FDPO path.
 
-Forty-one unit/integration/TCP tests pass, strict TypeScript and build pass.
+Forty-two unit/integration/TCP tests pass, strict TypeScript and build pass.
 Real local PostgreSQL passed independent-pool contention/CAS/idempotency and
 1,000 BU/tier pair checks. Population measurement and native Azure details are
 separately scoped in `docs/VALIDATION.md`.
@@ -66,7 +66,7 @@ scope and measured limitations; this is not a 50k-concurrent cloud test.
 ## Current autonomous work
 
 An eight-hour real-live rolling validation started 2026-10-15 18:14:40 UTC and
-ends 2026-10-16 02:14:40 UTC (07:44 IST). It is **not yet a pass**.
+ended 2026-10-16 02:14:40 UTC (07:44 IST); final result below.
 The first completed sample passed JSON, SSE, denied model, anonymous denial and
 an installed Claude Code check. Subsequent samples are authoritative.
 
@@ -114,16 +114,17 @@ Failure triage at 4.7 h (23 passing, 5 failing, not complete):
    so this sample remains unclassified; no retry was added because inference
    is not idempotent and Anthropic SDK clients retry 5xx by default.
 
-## Remaining delivery work
+## P-6 final result
 
-P-6 acceptance: eight elapsed hours, complete evidence and honest failure count;
-rerun full checks, publish sanitized final result, stop schedule/helper service.
-Repeated Ubuntu PostgreSQL failures exposed the pool-close/socket-disconnect
-race; the deterministic fix and subsequent cross-platform pass resolve U-9.
-Continue recurrence monitoring. The observed U-10 credential-selection bug is
-fixed; the earlier generic 503 cannot be retrospectively classified with
-certainty. Keep safe diagnostics and investigate any new failure without
-bypassing live membership checks.
+Completed 2026-10-16 02:14:41 UTC after 8.00 h: **41 passed, 5 failed** of 46
+samples. **Not a clean eight-hour pass**, and not an unchanged-build run. After
+the credential fix, 38 of 39 samples passed; the remaining failure was one
+transient upstream 502. Full sanitized table: `docs/VALIDATION.md`. Post-run
+checks passed: npm test (42), test:postgres, typecheck, PowerShell regression,
+packet gate. Schedule and loopback pilot were stopped after the final checks.
+
+U-9 (PostgreSQL close race) and U-10 (credential selection) stay resolved.
+A hosted rerun of the corrected build is the next honest endurance step.
 
 ## Explicit limits / next release work
 
