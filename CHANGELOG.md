@@ -17,6 +17,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · [Semantic Ve
 - Native AI Gateway preview Bicep, callable Anthropic alias, live quota probes,
   50k synthetic population benchmark and timed live validation harness. (P-4/P-5)
 
+- Deployment and user guide for administrators and developers. (docs)
+
 ### Changed
 
 ### Fixed

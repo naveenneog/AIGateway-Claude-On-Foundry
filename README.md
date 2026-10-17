@@ -83,6 +83,9 @@ npm run typecheck
 npm run build
 ```
 
+The end-to-end [deployment and user guide](docs/USER-GUIDE.md) covers hosting,
+Entra, policy, developer onboarding and administration.
+
 1. Follow [setup](docs/SETUP.md) to provision the native gateway and connect an
    existing Foundry deployment. No existing Foundry resources are replaced.
 2. Create your Entra API scope/application role and grant the service identity
