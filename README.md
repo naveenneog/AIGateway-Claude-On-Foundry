@@ -84,7 +84,9 @@ npm run build
 ```
 
 The end-to-end [deployment and user guide](docs/USER-GUIDE.md) covers hosting,
-Entra, policy, developer onboarding and administration.
+Entra, policy, developer onboarding and administration. The
+[architecture overview](docs/ARCHITECTURE.md) explains what the AI Gateway does
+and what this service adds.
 
 1. Follow [setup](docs/SETUP.md) to provision the native gateway and connect an
    existing Foundry deployment. No existing Foundry resources are replaced.

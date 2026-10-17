@@ -18,6 +18,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · [Semantic Ve
   50k synthetic population benchmark and timed live validation harness. (P-4/P-5)
 
 - Deployment and user guide for administrators and developers. (docs)
+- Architecture overview: AI Gateway role vs governance service, and the
+  AI-Gateway-only alternative. (docs)
 
 ### Changed
 
