@@ -50,6 +50,13 @@ The governance service adds only those missing pieces. All requests reach the
 native gateway as the service's identity, so native per-caller limits act as one
 outer cap, not per-developer caps. Size that cap for the whole service.
 
+## Hosting
+
+The governance service is stateless; budgets live in PostgreSQL, so enforcement
+is identical on any host. Default: Azure Container Apps (existing Dockerfile,
+plain SSE streaming). Functions Flex Consumption is a valid alternative after a
+port; see [ADR-0003](adr/0003-hosting-container-apps-or-functions.md).
+
 ## Simpler alternative: AI Gateway only
 
 Give developers direct Entra access to the native gateway and set per-person USD

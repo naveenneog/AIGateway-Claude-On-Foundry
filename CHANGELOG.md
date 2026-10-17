@@ -20,6 +20,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · [Semantic Ve
 - Deployment and user guide for administrators and developers. (docs)
 - Architecture overview: AI Gateway role vs governance service, and the
   AI-Gateway-only alternative. (docs)
+- ADR-0003: why Container Apps is the default host and what an Azure Functions
+  Flex Consumption port requires. (docs)
 
 ### Changed
 

@@ -104,6 +104,10 @@ service's 110-second upstream bound, and a durable PostgreSQL with verified
 TLS, backups and alerts. Scale-to-zero lowers idle cost but adds cold starts;
 PostgreSQL and inference still cost money.
 
+Azure Functions Flex Consumption is a supported alternative host, but the port
+is not implemented yet. See [ADR-0003](adr/0003-hosting-container-apps-or-functions.md)
+for why Container Apps is the default and what a Functions port requires.
+
 | Variable | Value |
 |---|---|
 | `NODE_ENV` | `production` |
