@@ -23,7 +23,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · [Semantic Ve
 - ADR-0003: why Container Apps is the default host and what an Azure Functions
   Flex Consumption port requires. (docs)
 
+- AI-Gateway-only mode: `Install-NativeOnly.ps1` turns one JSON file into native
+  aliases, alias-scoped RBAC, per-person USD caps and opt-in group pools / org cap,
+  with `-PlanOnly` preview and a live end-to-end verifier. Developer profile via
+  `Install-ClaudeNative.ps1`. See docs/NATIVE-ONLY.md. (P-7)
+
 ### Changed
+- Claude Code profiles now pin `model` and `availableModels` so user-level model
+  restrictions cannot silently switch to an unavailable model. (P-7)
 
 ### Fixed
 - Current CLI system-message and full-model-ID compatibility.

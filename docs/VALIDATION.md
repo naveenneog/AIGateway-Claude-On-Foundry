@@ -141,3 +141,41 @@ Independent Architect/Coder/QA/UX council reviewed the service. Its split-usage
 correctness finding was reproduced and fixed, and the socket/matrix coverage
 gaps were addressed. Prior budget-library security review also passed.
 This is scoped engineering evidence, not production certification.
+
+## Native-only mode (P-7)
+
+Run 2026-10-19 (IST 17:10–17:25) on the FDPO pilot gateway by
+`scripts/Test-NativeOnlyFlow.ps1`: **14 passed, 0 failed**. Two temporary
+user-assigned managed identities (A, B) plus the operator user; tokens minted
+in a short-lived container; temporary aliases; everything deleted afterwards
+(verified: no identities, aliases or containers left; workspace policies restored).
+
+| Check | Result |
+|---|---|
+| Installer applies config (provider, model, 2 aliases, workspace, 4 roles) | 9 operations OK |
+| Installer rerun | idempotent, no failures |
+| Member identity on its alias (RBAC at alias scope) | 200 within 3 s |
+| SSE streaming | 200, `text/event-stream` |
+| Identity without a role on another alias | 403 Access denied (not quota) |
+| Installed Claude Code 2.1.272 through the alias | returned `NATIVE-OK` |
+| Per-person cap: A exhausted | A 403 quota after 12 s; B's first call 200 (separate counter) |
+| B's own counter | B 403 quota afterwards |
+| Opt-in pool `counterKey []` | after A exhausted the pool, B 403 immediately: **shared** |
+| Override `{tid, oid}` for B on a tiny cap | B 200 repeatedly; A 403 quota |
+| Opt-in org cap on workspace | 403 quota within 12 s |
+| Org cap removed via config | 200 within 2 s |
+| Role assignment deleted | denied after 64 s |
+
+Re-run after the council fixes (config checked before any Azure change,
+filtered workspace snapshot, checked restore, IMDS mint retry): **14/14 PASS**,
+revocation 63 s, cleanup verified (no test identities, aliases or containers;
+workspace policies restored). An earlier attempt failed only at the token mint
+(container IMDS not ready); cleanup still restored the workspace.
+
+Earlier the same day the pilot alias's $1/day per-identity cap stopped a real
+Claude Code session with `403 LLM cost quota is exceeded`.
+
+Not covered: Entra **group** principals (the tenant's per-user directory-object
+quota blocked creating test groups; group RBAC is standard Azure behaviour but
+unverified here), Claude Desktop, overshoot size under concurrency, multi-unit
+gateways, and propagation at scale.

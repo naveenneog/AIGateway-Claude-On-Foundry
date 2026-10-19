@@ -1,10 +1,28 @@
 # Status
 
-**Active packet:** none (P-6 complete with disclosed failures)
-**State:** DONE
+**Active packet:** P-7 AI-Gateway-only installer (M2)
+**State:** DONE (live 14/14 twice; council fixes applied)
 **Branch:** main
 
-## Acceptance and evidence
+## P-7 acceptance
+
+- One JSON file → native aliases, alias-scope RBAC, per-person caps, opt-in
+  group pool and org cap, per-person overrides; `-PlanOnly`; idempotent rerun
+  preserving portal-added policies. 11 planner tests + PowerShell regression.
+- Live: 14/14 checks incl. installed Claude Code; see VALIDATION P-7.
+- RED: planner module missing before tests; live harness found case-insensitive
+  `$Std`/`$std` shadowing and an `npx.ps1` invocation failure, both fixed.
+- Council: security review found no exploitable issues. Code review found 3
+  Medium issues, all fixed test-first. (1) `location` accepted any region, or was
+  missing, so a deploy failed later; the planner now accepts only eastus2 or
+  swedencentral and defaults to eastus2. (2) The gateway deploy and Foundry role
+  grant ran before the config was checked; the config is now checked first, with
+  a regression test asserting no Azure request. (3) The live-test cleanup could
+  leave an org cap if the workspace snapshot was null; the snapshot is now
+  filtered, the restore is checked, and a failed restore fails the run.
+- Open: Entra group principals not live-verified (U-15, directory quota).
+
+## Acceptance and evidence (governed mode, P-1..P-6)
 
 - Entra verification and live transitive Graph membership; no projected roster.
 - BU AND tier AND combination allowlists; configurable pair/person/output budgets.

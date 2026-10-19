@@ -1,5 +1,9 @@
 # Deployment and user guide
 
+> Only need per-person USD caps, optional per-group pools and model access per
+> group? Use the one-command **[AI Gateway only](NATIVE-ONLY.md)** mode instead;
+> no service or database. This guide covers the governed mode.
+
 Two components work together. Developers only ever call the governance service.
 
 ```text

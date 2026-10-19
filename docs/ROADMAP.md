@@ -23,6 +23,14 @@
   Investigate U-10 if live directory failures recur, using safe phase/status
   diagnostics. Never bypass the membership check to improve availability.
 
+## M2: AI-Gateway-only mode (no service, no database)
+
+- [x] P-7: Config-driven installer for native aliases, RBAC and USD caps.
+  One alias per access group; RBAC on the alias; per-person cap always; group
+  pool and org cap opt-in; per-person overrides; idempotent reruns that keep
+  portal-added policies. Live flow 14/14 (see VALIDATION). Group principals
+  remain unverified live (U-15).
+
 ## Explicit exclusions
 
 - No edits to the reference repository or existing shared Azure workloads.

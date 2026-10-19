@@ -11,6 +11,20 @@ This is an independent project. The
 [reference accelerator](https://github.com/naveenneog/claude-code-foundry-gateway)
 was read for guidance and was not modified.
 
+## Two deployment modes
+
+| | **AI Gateway only** ([guide](docs/NATIVE-ONLY.md)) | **Governed** (this service) |
+|---|---|---|
+| Infrastructure | Gateway only; no compute, no database | Gateway + service + PostgreSQL |
+| Access | RBAC per alias (one alias per access group) | Live Graph membership, BU AND tier |
+| Per-person USD cap | Yes, native, editable in the portal | Yes, reserved before inference |
+| Group / org pool | Opt-in, one pool per alias + gateway-wide | Org, BU, BU×tier pools, reserved |
+| BU AND tier, CLI vs Desktop | No | Yes |
+| Live verified | 14/14 checks, installed Claude Code | See below |
+
+Start with **AI Gateway only** if per-person caps plus optional per-group pools
+are enough: `scripts\Install-NativeOnly.ps1 -ConfigPath <file>`.
+
 ## What works
 
 | Capability | Implementation |
@@ -63,9 +77,10 @@ claim-based USD overrides. These are newer than some Learn pages and the
 reference project's September test. Native Entra and USD limits work in our pilot.
 
 But a claim override sets each matching identity's allowance; it **does not pool
-spend across matching people**. Native per-key/per-person caps do not establish
-the required org/BU/BU-tier pooled budgets or arbitrary BU AND tier membership
-intersection. This service supplies those missing controls.
+spend across matching people**. A `counterKey []` limit does pool spend, but only
+for one alias (verified live in P-7). The native tier cannot pool across several
+aliases per BU, or intersect BU AND tier membership. This service supplies those
+controls; if you don't need them, use [AI Gateway only](docs/NATIVE-ONLY.md).
 See [capability assessment](docs/CAPABILITIES.md) and
 [ADR-0002](docs/adr/0002-request-time-governance.md).
 
