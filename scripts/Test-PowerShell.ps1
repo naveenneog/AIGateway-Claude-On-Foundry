@@ -21,7 +21,7 @@ function global:az {
     if ($args -notcontains '--only-show-errors') { 'Native CLI diagnostic before JSON'; return }
     if ($args -contains 'get-access-token') {
         $subscription = [Array]::IndexOf($args, '--subscription')
-        if ($subscription -lt 0 -or $args[$subscription + 1] -cne 'fixture') { throw 'Credential must use the selected subscription' }
+        if ($subscription -lt 0 -or $args[$subscription + 1] -cnotin @('fixture', '11111111-1111-1111-1111-111111111100')) { throw 'Credential must use the selected subscription' }
         $global:AigatewayPowerShellTestResource = $args[[Array]::IndexOf($args, '--resource') + 1]
         @{ accessToken = $global:AigatewayPowerShellTestToken } | ConvertTo-Json -Compress
     }
@@ -32,12 +32,23 @@ function global:az {
     }
     else { throw 'Unexpected Azure CLI operation in regression' }
 }
-function global:node { $global:AigatewayPowerShellTestStarted++; $global:LASTEXITCODE = 0 }
+function global:node {
+    $global:LASTEXITCODE = 0
+    if ("$($args[1])" -like '*native-plan.ts') {
+        if ("$($args[0])" -notlike '*tsx*cli.mjs' -or -not (Test-Path -LiteralPath $args[2]) -or -not (Test-Path -LiteralPath $args[3])) { throw 'Installer must plan from a resolved config and existing-policy snapshot' }
+        if ($global:AigatewayPowerShellTestPlanInvalid) { $global:LASTEXITCODE = 1; return }
+        return '[{"kind":"alias","method":"PUT","path":"/subscriptions/fixture/aliases/claude-standard","apiVersion":"2025-09-01-preview","body":{}}]'
+    }
+    $global:AigatewayPowerShellTestStarted++
+}
+$global:AigatewayPowerShellTestWrites = 0
 function global:Invoke-RestMethod {
     param($Uri, $Method, $Headers, $Body, $ContentType, $TimeoutSec, $MaximumRedirection)
     if ($Headers.Authorization -cne "Bearer $global:AigatewayPowerShellTestToken" -or $MaximumRedirection -ne 0) {
         throw 'Azure request authentication or redirect boundary failed.'
     }
+    $global:AigatewayPowerShellTestRequests++
+    if ($Method -in 'Put', 'Patch' -and [string]$Uri -like '*/aliases/*') { $global:AigatewayPowerShellTestWrites++ }
     if ([string]$Uri -like 'https://graph.microsoft.com/*') { @{ value = @('fixture-group') } }
     elseif ([string]$Uri -like '*/listSecrets?*') { @{ primaryKey = $global:AigatewayPowerShellTestToken } }
     elseif ($Method -eq 'Delete') {
@@ -100,6 +111,29 @@ try {
         & (Join-Path $PSScriptRoot 'Get-GatewayToken.ps1') -Resource 'api://fixture' -SubscriptionId fixture
     } finally { [Console]::SetOut($originalOut) }
     if ($captured.ToString() -cne $global:AigatewayPowerShellTestToken) { throw 'Token helper output must contain only the token' }
+    $nativeConfig = Join-Path $work 'native.json'
+    $example = Get-Content -LiteralPath (Join-Path $root 'config\native-only.example.json') -Raw
+    Set-Content -LiteralPath $nativeConfig -Value $example
+    $placeholderRejected = $false
+    try { $null = & (Join-Path $PSScriptRoot 'Install-NativeOnly.ps1') -ConfigPath $nativeConfig -PlanOnly }
+    catch { if ($_.Exception.Message -notmatch 'placeholder') { throw }; $placeholderRejected = $true }
+    if (-not $placeholderRejected) { throw 'Installer accepted example placeholder IDs' }
+    Set-Content -LiteralPath $nativeConfig -Value ($example -replace '00000000-0000-0000-0000-0000000000', '11111111-1111-1111-1111-1111111111')
+    $plan = & (Join-Path $PSScriptRoot 'Install-NativeOnly.ps1') -ConfigPath $nativeConfig -PlanOnly 3>$null
+    if (-not ($plan -match '^PLAN PUT alias claude-standard$') -or $global:AigatewayPowerShellTestWrites -ne 0) { throw 'Plan-only install must print operations without writing' }
+    $global:AigatewayPowerShellTestPlanInvalid = $true
+    $global:AigatewayPowerShellTestRequests = 0
+    $rejected = $false
+    try { $null = & (Join-Path $PSScriptRoot 'Install-NativeOnly.ps1') -ConfigPath $nativeConfig 3>$null } catch { $rejected = "$_" -match 'invalid' }
+    $global:AigatewayPowerShellTestPlanInvalid = $false
+    if (-not $rejected -or $global:AigatewayPowerShellTestRequests -ne 0) { throw 'Invalid native config must fail before any Azure request (deploy or role grant)' }
+    $profilePath = Join-Path $work 'native-profile.json'
+    $null = & (Join-Path $PSScriptRoot 'Install-ClaudeNative.ps1') -GatewayName fixture-gw -Alias claude-standard -SettingsPath $profilePath
+    $profile = Get-Content -LiteralPath $profilePath -Raw | ConvertFrom-Json
+    if ($profile.env.ANTHROPIC_BASE_URL -cne 'https://fixture-gw.azure-api.net/default/models/anthropic' -or $profile.model -cne 'claude-standard' -or
+        @($profile.availableModels) -join ',' -cne 'claude-standard' -or $profile.apiKeyHelper -notmatch 'https://azure-api.net/aigateway') {
+        throw 'Native developer profile must pin the alias and the AI Gateway token audience'
+    }
     Write-Output 'PowerShell startup and token-helper warning suppression passed.'
 } finally {
     Set-Location $originalLocation
@@ -107,6 +141,6 @@ try {
     Remove-Item Function:\node
     Remove-Item Function:\Invoke-RestMethod
     Remove-Item Function:\Invoke-WebRequest
-    Remove-Variable AigatewayPowerShellTestStarted, AigatewayPowerShellTestToken, AigatewayPowerShellTestResource, AigatewayPowerShellTestDeleted, AigatewayPowerShellTestFailDelete -Scope Global
+    Remove-Variable AigatewayPowerShellTestStarted, AigatewayPowerShellTestToken, AigatewayPowerShellTestResource, AigatewayPowerShellTestDeleted, AigatewayPowerShellTestFailDelete, AigatewayPowerShellTestWrites, AigatewayPowerShellTestRequests, AigatewayPowerShellTestPlanInvalid -Scope Global
     Remove-Item -LiteralPath $work -Recurse -Force
 }

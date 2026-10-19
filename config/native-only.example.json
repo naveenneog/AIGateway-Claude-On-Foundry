@@ -1,0 +1,44 @@
+{
+  "subscriptionId": "00000000-0000-0000-0000-000000000000",
+  "resourceGroup": "rg-claude-gateway",
+  "gatewayName": "claude-gw-example",
+  "location": "eastus2",
+  "foundry": {
+    "accountId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-foundry/providers/Microsoft.CognitiveServices/accounts/example-foundry",
+    "endpoint": "https://example-foundry.services.ai.azure.com/"
+  },
+  "models": [
+    { "name": "claude-sonnet-5", "modelVersion": "1" },
+    { "name": "claude-opus-5", "modelVersion": "1" }
+  ],
+  "budgetPeriod": "month",
+  "orgBudgetUsd": 20000,
+  "accessGroups": [
+    {
+      "alias": "claude-standard",
+      "description": "Standard developers: Sonnet, $50 per person per month",
+      "model": "claude-sonnet-5",
+      "principals": [{ "id": "00000000-0000-0000-0000-000000000001", "type": "Group" }],
+      "userBudgetUsd": 50
+    },
+    {
+      "alias": "claude-premium",
+      "description": "Premium developers: Opus, $200 per person, $2000 pooled",
+      "model": "claude-opus-5",
+      "principals": [{ "id": "00000000-0000-0000-0000-000000000002", "type": "Group" }],
+      "userBudgetUsd": 200,
+      "groupBudgetUsd": 2000,
+      "userOverrides": [
+        { "tenantId": "00000000-0000-0000-0000-000000000003", "objectId": "00000000-0000-0000-0000-000000000004", "budgetUsd": 500 }
+      ]
+    },
+    {
+      "alias": "finance-sonnet",
+      "description": "Finance BU: Sonnet with a $1000 BU pool",
+      "model": "claude-sonnet-5",
+      "principals": [{ "id": "00000000-0000-0000-0000-000000000005", "type": "Group" }],
+      "userBudgetUsd": 25,
+      "groupBudgetUsd": 1000
+    }
+  ]
+}

@@ -22,6 +22,8 @@ if ($SubscriptionId) {
 }
 $settings = @{
     apiKeyHelper = $command
+    model = $Model
+    availableModels = @($Model)
     env = @{
         ANTHROPIC_BASE_URL = $GatewayUrl.AbsoluteUri.TrimEnd('/')
         ANTHROPIC_MODEL = $Model
