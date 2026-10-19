@@ -27,10 +27,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · [Semantic Ve
   aliases, alias-scoped RBAC, per-person USD caps and opt-in group pools / org cap,
   with `-PlanOnly` preview and a live end-to-end verifier. Developer profile via
   `Install-ClaudeNative.ps1`. See docs/NATIVE-ONLY.md. (P-7)
+- `Test-NativeGroupAccess.ps1`: live check that an Entra group assignment on an
+  alias grants its members access. Its direct grants are suspended and then restored. (P-7)
 
 ### Changed
 - Claude Code profiles now pin `model` and `availableModels` so user-level model
   restrictions cannot silently switch to an unavailable model. (P-7)
+- Native installer warns on Entra Group principals. In a live preview test, group
+  assignments did not grant members access within 90 minutes. The example config
+  and guide now use User principals. (P-7)
 
 ### Fixed
 - Current CLI system-message and full-model-ID compatibility.

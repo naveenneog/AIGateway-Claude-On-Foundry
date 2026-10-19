@@ -121,6 +121,12 @@ try {
     Set-Content -LiteralPath $nativeConfig -Value ($example -replace '00000000-0000-0000-0000-0000000000', '11111111-1111-1111-1111-1111111111')
     $plan = & (Join-Path $PSScriptRoot 'Install-NativeOnly.ps1') -ConfigPath $nativeConfig -PlanOnly 3>$null
     if (-not ($plan -match '^PLAN PUT alias claude-standard$') -or $global:AigatewayPowerShellTestWrites -ne 0) { throw 'Plan-only install must print operations without writing' }
+    $groupWarnings = & (Join-Path $PSScriptRoot 'Install-NativeOnly.ps1') -ConfigPath $nativeConfig -PlanOnly 3>&1 | Where-Object { $_ -is [Management.Automation.WarningRecord] -and "$_" -match 'Group principal' }
+    if (@($groupWarnings).Count -ne 0) { throw 'Installer must not warn about group principals for a User-only config' }
+    $groupConfig = Join-Path $work 'native-group.json'
+    Set-Content -LiteralPath $groupConfig -Value ((Get-Content -LiteralPath $nativeConfig -Raw) -replace '"type": "User"', '"type": "Group"')
+    $groupWarnings = & (Join-Path $PSScriptRoot 'Install-NativeOnly.ps1') -ConfigPath $groupConfig -PlanOnly 3>&1 | Where-Object { $_ -is [Management.Automation.WarningRecord] -and "$_" -match 'Group principal' }
+    if (@($groupWarnings).Count -lt 1) { throw 'Installer must warn that native group role assignments were not honored live' }
     $global:AigatewayPowerShellTestPlanInvalid = $true
     $global:AigatewayPowerShellTestRequests = 0
     $rejected = $false
@@ -141,6 +147,6 @@ try {
     Remove-Item Function:\node
     Remove-Item Function:\Invoke-RestMethod
     Remove-Item Function:\Invoke-WebRequest
-    Remove-Variable AigatewayPowerShellTestStarted, AigatewayPowerShellTestToken, AigatewayPowerShellTestResource, AigatewayPowerShellTestDeleted, AigatewayPowerShellTestFailDelete, AigatewayPowerShellTestWrites, AigatewayPowerShellTestRequests, AigatewayPowerShellTestPlanInvalid -Scope Global
+    Remove-Variable AigatewayPowerShellTestStarted, AigatewayPowerShellTestToken, AigatewayPowerShellTestResource, AigatewayPowerShellTestDeleted, AigatewayPowerShellTestFailDelete, AigatewayPowerShellTestWrites, AigatewayPowerShellTestRequests, AigatewayPowerShellTestPlanInvalid -Scope Global -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $work -Recurse -Force
 }

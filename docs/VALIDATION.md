@@ -175,7 +175,35 @@ workspace policies restored). An earlier attempt failed only at the token mint
 Earlier the same day the pilot alias's $1/day per-identity cap stopped a real
 Claude Code session with `403 LLM cost quota is exceeded`.
 
-Not covered: Entra **group** principals (the tenant's per-user directory-object
-quota blocked creating test groups; group RBAC is standard Azure behaviour but
-unverified here), Claude Desktop, overshoot size under concurrency, multi-unit
+### Entra group principals (negative result)
+
+Run 2026-10-19 on the same pilot gateway, using an existing empty security group
+(the directory quota blocks creating new groups). The installer put the alias's
+only role assignment on the group.
+
+| Subject | Result |
+|---|---|
+| Installer assigns AI Gateway Models User to the group at alias scope | OK |
+| Operator user, not in the group, direct grant temporarily removed | 403 after 11 s (expected) |
+| Same user added to the group, fresh token | **still 403 after 90 min**, 135+ denials |
+| Two user-assigned managed identities added to the group | **403 for about 40 min** |
+
+Diagnosis:
+- The gateway token (`aud https://azure-api.net/aigateway`) carries no `groups`
+  claim.
+- ARM effective permissions at the alias listed only the user's
+  Reader and Owner actions. There were no AI Gateway data actions from the group.
+- The managed-identity result is expected: Azure caches managed-identity group
+  claims for about 24 hours.
+- The user result is not explained by any documented delay.
+
+Conclusion: native mode today requires direct User (or ServicePrincipal) principals.
+
+Cleanup was verified: the temporary alias and its assignment were deleted, the
+group is empty again, and the operator's direct grant was restored.
+
+Tools: `scripts/Test-NativeGroupAccess.ps1` (user path) and an ad-hoc
+managed-identity variant of the flow test, which has since been reverted.
+
+Not covered: Claude Desktop, overshoot size under concurrency, multi-unit
 gateways, and propagation at scale.

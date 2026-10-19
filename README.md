@@ -16,7 +16,7 @@ was read for guidance and was not modified.
 | | **AI Gateway only** ([guide](docs/NATIVE-ONLY.md)) | **Governed** (this service) |
 |---|---|---|
 | Infrastructure | Gateway only; no compute, no database | Gateway + service + PostgreSQL |
-| Access | RBAC per alias (one alias per access group) | Live Graph membership, BU AND tier |
+| Access | RBAC per alias, one assignment per person (group assignments did not work live; rerun on changes) | Live Graph membership, BU AND tier, no sync |
 | Per-person USD cap | Yes, native, editable in the portal | Yes, reserved before inference |
 | Group / org pool | Opt-in, one pool per alias + gateway-wide | Org, BU, BU×tier pools, reserved |
 | BU AND tier, CLI vs Desktop | No | Yes |

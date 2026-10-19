@@ -28,8 +28,11 @@
 - [x] P-7: Config-driven installer for native aliases, RBAC and USD caps.
   One alias per access group; RBAC on the alias; per-person cap always; group
   pool and org cap opt-in; per-person overrides; idempotent reruns that keep
-  portal-added policies. Live flow 14/14 (see VALIDATION). Group principals
-  remain unverified live (U-15).
+  portal-added policies. Live flow 14/14 (see VALIDATION). Entra group
+  principals tested live and did not grant access in the preview (U-15), so
+  access is per-person User assignments.
+- [ ] Optional `-ExpandGroups`: resolve group members into User assignments
+  and reconcile removals on each run (a scheduled sync; not built).
 
 ## Explicit exclusions
 

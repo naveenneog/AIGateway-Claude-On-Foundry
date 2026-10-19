@@ -26,9 +26,11 @@ Provide a second, opt-in deployment mode with **no compute and no database**:
 
 - One **alias per access group**. The alias's single backend model is that
   group's model allowlist.
-- Access is **Azure RBAC on the alias**, assigned to the Entra group. Azure
-  resolves membership server-side, so there is no roster sync and no runtime
-  key reaches developers.
+- Access is **Azure RBAC on the alias**, with no runtime key reaching
+  developers. The intent was to assign the Entra group so that Azure resolves
+  membership. The live test (VALIDATION) showed that group assignments did
+  **not** grant data-plane access in this preview, so principals are
+  per-person User assignments for now. The installer warns on Group principals.
 - Per-person cap: `user-budget`, `counterKey ["identity"]`, on every alias.
 - Opt-in group pool: `group-budget`, `counterKey []`, on that alias.
 - Opt-in org cap: `org-budget`, `counterKey []`, `scope: workspace`.
@@ -41,7 +43,11 @@ Provide a second, opt-in deployment mode with **no compute and no database**:
 ## Consequences
 
 Kept from the governed mode: arbitrary numbers of groups and tiers, model
-allowlists, per-person USD caps, optional pools, no sync, and edits in a UI.
+allowlists, per-person USD caps, optional pools, and edits in a UI.
+
+Lost against intent: **no-sync membership**. Until the gateway honours group
+assignments, a membership change means editing `principals` and rerunning the
+installer. That is a sync step; the governed mode avoids it.
 
 Given up (choose the governed mode if any is required):
 

@@ -11,6 +11,12 @@ if ((Get-Content -LiteralPath $ConfigPath -Raw) -match '00000000-0000-0000-0000-
     throw 'Config still contains placeholder GUIDs from the example. Replace them with real IDs.'
 }
 $sub = $config.subscriptionId
+$groupPrincipals = @($config.accessGroups | ForEach-Object { $_.principals } | Where-Object { -not $_.type -or $_.type -eq 'Group' })
+if ($groupPrincipals.Count -gt 0) {
+    Write-Warning ("$($groupPrincipals.Count) Group principal(s) configured. In a live test (2026-10-19) the preview AI Gateway did not honor " +
+        'Entra group role assignments for group members (still 403 after 90 minutes). Assign User principals directly and rerun this ' +
+        'installer when people join or leave, or use governed mode for group membership without a sync step. See docs/NATIVE-ONLY.md.')
+}
 $gatewayId = "/subscriptions/$sub/resourceGroups/$($config.resourceGroup)/providers/Microsoft.ApiManagement/service/$($config.gatewayName)"
 $workspace = "https://management.azure.com$gatewayId/workspaces/default"
 $api = '?api-version=2025-09-01-preview'

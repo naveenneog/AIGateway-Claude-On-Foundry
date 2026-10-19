@@ -60,10 +60,12 @@ port; see [ADR-0003](adr/0003-hosting-container-apps-or-functions.md).
 ## Simpler alternative: AI Gateway only
 
 Implemented in P-7 ([guide](NATIVE-ONLY.md), [ADR-0004](adr/0004-native-only-mode.md)).
-Each access group is one alias, with Azure RBAC for the Entra group and a
-per-person USD cap. An optional pooled group cap and a gateway-wide cap need no
-extra service or database. You lose the BU-and-tier rule, pools spanning several
-aliases, and client control.
+Each access group is one alias, with Azure RBAC for each person and a
+per-person USD cap. Entra group assignments did not grant access in the live
+preview test, so membership changes need an installer rerun. An optional
+pooled group cap and a gateway-wide cap need no extra service or database. You
+lose the BU-and-tier rule, no-sync membership, pools spanning several aliases,
+and client control.
 
 See [CAPABILITIES.md](CAPABILITIES.md), [ADR-0002](adr/0002-request-time-governance.md)
 and the [deployment and user guide](USER-GUIDE.md).

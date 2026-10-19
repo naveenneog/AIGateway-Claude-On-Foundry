@@ -20,7 +20,14 @@
   a regression test asserting no Azure request. (3) The live-test cleanup could
   leave an org cap if the workspace snapshot was null; the snapshot is now
   filtered, the restore is checked, and a failed restore fails the run.
-- Open: Entra group principals not live-verified (U-15, directory quota).
+- Entra group principals tested live (U-15): **did not grant access** in this
+  preview (user denied 90 min after joining; managed identities about 40 min).
+  The installer now warns on Group principals; the example config and guide use
+  User principals. Native mode therefore needs an installer rerun on membership
+  changes; governed mode remains the no-sync option.
+- RED: the group-principal warning test failed before the warning existed. The
+  live harness found single-element array unrolling (`[object[]]` fix) and a
+  hardcoded success label in the group verifier, both fixed.
 
 ## Acceptance and evidence (governed mode, P-1..P-6)
 
